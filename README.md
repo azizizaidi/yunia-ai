@@ -2,7 +2,9 @@
 
 <div align="center">
 
-    <img src="yunia-ai.png" alt="Yunia AI Logo" width="800" />
+   <p align="center">
+  <img src="yunia-ai.png" alt="Yunia AI Logo" width="800" />
+</p>
   <h3>✨ "Hi, I'm Yunia — your personal AI assistant." ✨</h3>
   
   <div align="center">
