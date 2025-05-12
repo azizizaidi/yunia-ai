@@ -61,7 +61,7 @@ Built as part of a **14-day bootcamp frontend project**, this system is the foun
         <br />Text + Voice Interface
       </td>
       <td align="center">
-        <img src="https://img.icons8.com/fluency/96/000000/habit.png" width="60" />
+        <img src="https://img.icons8.com/external-flaticons-lineal-color-flat-icons/64/external-habit-lifestyles-flaticons-lineal-color-flat-icons-2.png" width="60" />
         <br /><strong>Habit Tracker</strong>
         <br />Track & Manage Habits
       </td>
@@ -95,7 +95,7 @@ Built as part of a **14-day bootcamp frontend project**, this system is the foun
         <br />Free / Pro / Business
       </td>
       <td align="center">
-        <img src="https://img.icons8.com/fluency/96/000000/responsive.png" width="60" />
+        <img src="https://img.icons8.com/officel/80/media-queries.png" width="60" />
         <br /><strong>Responsive</strong>
         <br />Desktop & Mobile
       </td>
