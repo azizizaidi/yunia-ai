@@ -1,7 +1,48 @@
 # Yunia AI – Smart Personal Assistant Dashboard (Frontend)
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/placeholder-logo" alt="Yunia AI Logo" width="120" height="120" />
+ <svg viewBox="0 0 180 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main AI icon - stylized neural network with brain-like appearance -->
+  <g transform="translate(10, 10)">
+    <!-- Background circle with gradient -->
+    <defs>
+      <radialGradient id="bgGradient" cx="50%" cy="50%" r="60%">
+        <stop offset="0%" style="stop-color:#667EEA;stop-opacity:0.1" />
+        <stop offset="100%" style="stop-color:#667EEA;stop-opacity:0.03" />
+      </radialGradient>
+      <linearGradient id="nodeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#667EEA" />
+        <stop offset="100%" style="stop-color:#764AF1" />
+      </linearGradient>
+    </defs>
+    
+    <!-- Outer circle -->
+    <circle cx="20" cy="20" r="18" fill="url(#bgGradient)" stroke="none"/>
+    
+    <!-- Neural network nodes -->
+    <circle cx="15" cy="12" r="2.5" fill="url(#nodeGradient)"/>
+    <circle cx="25" cy="12" r="2.5" fill="url(#nodeGradient)"/>
+    <circle cx="20" cy="20" r="3" fill="url(#nodeGradient)"/>
+    <circle cx="12" cy="28" r="2.5" fill="url(#nodeGradient)"/>
+    <circle cx="28" cy="28" r="2.5" fill="url(#nodeGradient)"/>
+    
+    <!-- Connection lines -->
+    <path d="M15,12 Q20,16 20,20" stroke="#667EEA" stroke-width="1.5" fill="none" opacity="0.8"/>
+    <path d="M25,12 Q20,16 20,20" stroke="#667EEA" stroke-width="1.5" fill="none" opacity="0.8"/>
+    <path d="M20,20 Q16,24 12,28" stroke="#667EEA" stroke-width="1.5" fill="none" opacity="0.8"/>
+    <path d="M20,20 Q24,24 28,28" stroke="#667EEA" stroke-width="1.5" fill="none" opacity="0.8"/>
+    
+    <!-- Central pulse effect -->
+    <circle cx="20" cy="20" r="1" fill="#F093FB" opacity="0.9"/>
+  </g>
+  
+  <!-- Company name -->
+  <text x="55" y="32" font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif" font-size="18" font-weight="700" fill="#2D3748">Yunia</text>
+  <text x="108" y="32" font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif" font-size="18" font-weight="400" fill="#6B73FF">AI</text>
+  
+  <!-- Tagline -->
+  <text x="55" y="47" font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="400" fill="#718096" letter-spacing="0.5px">Personal Assistant AI</text>
+</svg>
   
   <h3>✨ "Hi, I'm Yunia — your personal AI assistant." ✨</h3>
   
