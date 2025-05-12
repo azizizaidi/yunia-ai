@@ -213,7 +213,7 @@ yunia-ai/
         <br />System flow
       </td>
       <td align="center">
-        <img src="https://img.icons8.com/color/48/000000/wireframe.png" />
+        <img src="https://img.icons8.com/color/48/web-design.png" />
         <br /><strong>wireframe.png</strong>
         <br />Screen layout plan
       </td>
