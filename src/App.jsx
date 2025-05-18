@@ -1,15 +1,19 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import Dashboard from './pages/Dashboard'
 
 function App() {
   return (
-    <div className="min-h-screen bg-blue-100 flex items-center justify-center">
-      <h1 className="text-3xl font-bold text-blue-700">✅ Tailwind Manual Setup Done</h1>
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-blue-600 text-white p-4 shadow-md">
+        <div className="container mx-auto">
+          <h1 className="text-2xl font-bold">Yunia Dashboard</h1>
+        </div>
+      </header>
+      <main className="container mx-auto py-6">
+        <Dashboard />
+      </main>
     </div>
   )
 }
-
 
 export default App
