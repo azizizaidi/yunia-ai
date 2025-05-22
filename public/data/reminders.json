@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "title": "Solat Dhuha",
+    "time": "09:30",
+    "note": "Peringatan harian"
+  },
+  {
+    "id": 2,
+    "title": "Kelas mengaji Yusof",
+    "time": "20:00",
+    "note": "Online dengan Ustaz Hakim"
+  }
+]
