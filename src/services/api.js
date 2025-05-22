@@ -4,7 +4,7 @@
  * Fetch user data from user.json
  * @returns {Promise<Array>} Array of user objects
  */
-export const fetchUserData = async () => {
+export const fetchUsers = async () => {
   try {
     const response = await fetch('/data/user.json');
     if (!response.ok) {
