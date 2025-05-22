@@ -1,14 +1,14 @@
 [
   {
     "id": 1,
-    "title": "Solat Dhuha",
+    "title": "Morning Prayer",
     "time": "09:30",
-    "note": "Peringatan harian"
+    "note": "Daily reminder"
   },
   {
     "id": 2,
-    "title": "Kelas mengaji Yusof",
+    "title": "Reading Class",
     "time": "20:00",
-    "note": "Online dengan Ustaz Hakim"
+    "note": "Online with Teacher"
   }
 ]

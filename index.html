@@ -4,10 +4,34 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Yunia AI</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // Script untuk menangani kes di mana pengguna menekan butang back
+      window.addEventListener('pageshow', function(event) {
+        // Periksa jika halaman diambil dari cache (bfcache)
+        if (event.persisted) {
+          // Periksa sama ada pengguna sudah login
+          const isAuthenticated = localStorage.getItem('user') !== null;
+          const currentPath = window.location.pathname;
+
+          // Jika pengguna sudah login dan berada di halaman login, arahkan ke dashboard
+          if (isAuthenticated && (currentPath === '/login' || currentPath === '/')) {
+            window.location.href = '/dashboard';
+          }
+
+          // Jika pengguna belum login dan berada di halaman dashboard, arahkan ke login
+          if (!isAuthenticated && currentPath === '/dashboard') {
+            window.location.href = '/login';
+          }
+        }
+      });
+    </script>
   </body>
 </html>

@@ -1,14 +1,14 @@
 [
   {
     "id": 101,
-    "title": "Semak modul Habit",
-    "description": "Pastikan komponen Habit lengkap.",
+    "title": "Check Habit module",
+    "description": "Ensure Habit component is complete.",
     "status": "pending"
   },
   {
     "id": 102,
-    "title": "Integrasi API Reminder",
-    "description": "Fetch data dari reminders.json",
+    "title": "Integrate Reminder API",
+    "description": "Fetch data from reminders.json",
     "status": "confirmed"
   }
 ]

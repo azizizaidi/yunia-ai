@@ -2,6 +2,7 @@
   {
     "id": 1,
     "name": "Azizi",
-    "email": "azizizaidi5@gmail.com"
+    "email": "azizizaidi5@gmail.com",
+    "password": "admin123"
   }
 ]
