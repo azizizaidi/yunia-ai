@@ -38,14 +38,20 @@ export const getUsers = async () => {
  * Authenticate user with email and password
  * @param {string} email - User email
  * @param {string} password - User password
+ * @param {string} role - User role (optional, for specific role authentication)
  * @returns {Promise<Object|null>} User object if authenticated, null otherwise
  */
-export const loginUser = async (email, password) => {
+export const loginUser = async (email, password, role = null) => {
   try {
     const users = await getUsers();
-    const user = users.find(
+    let user = users.find(
       (u) => u.email === email && u.password === password
     );
+
+    // If role is specified, check if user has that role
+    if (user && role && user.role !== role) {
+      return null;
+    }
 
     if (user) {
       // Store user in localStorage
@@ -78,9 +84,10 @@ export const registerUser = async (userData) => {
     // Get the latest ID
     const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
 
-    // Create new user
+    // Create new user with role "user" by default
     const newUser = {
       id: newId,
+      role: "user", // Set default role to "user"
       ...userData
     };
 

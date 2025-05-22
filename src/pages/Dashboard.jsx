@@ -1,10 +1,10 @@
 // src/pages/DashboardPage.jsx
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCurrentUser } from "../services/api";
 import UserProfile from "../components/UserProfile";
 import TaskList from "../components/TaskList";
 import ReminderList from "../components/ReminderList";
+import useAuth from "../hooks/useAuth";
 
 /**
  * Dashboard page component
@@ -12,21 +12,19 @@ import ReminderList from "../components/ReminderList";
  */
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, isAdmin } = useAuth();
 
   useEffect(() => {
-    // Check if user is logged in
-    const user = getCurrentUser();
-
-    // If no user data, redirect to login page
-    if (!user) {
-      navigate("/login");
-      return;
-    }
-
     // Add event listener to check authentication whenever the page becomes active
     const checkAuth = () => {
-      if (!getCurrentUser()) {
+      if (!isAuthenticated()) {
         navigate("/login", { replace: true });
+        return;
+      }
+
+      // If user is an admin, redirect to admin dashboard
+      if (isAdmin()) {
+        navigate("/admin/dashboard", { replace: true });
       }
     };
 
