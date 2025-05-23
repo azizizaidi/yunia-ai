@@ -5,5 +5,12 @@
     "email": "azizizaidi5@gmail.com",
     "password": "admin123",
     "role": "admin"
+  },
+  {
+    "id": 1,
+    "name": "ina",
+    "email": "ina@gmail.com",
+    "password": "ina123",
+    "role": "user"
   }
 ]
