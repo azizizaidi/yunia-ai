@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../services/api";
-import Loader from "../components/Loader";
-import Card from "../components/Card";
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
@@ -47,7 +45,7 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f5f7ff]">
       <div className="text-center mb-6">
         <div className="flex justify-center mb-4">
           <div className="bg-[#4a4a9c] p-3 rounded-full">
@@ -60,20 +58,20 @@ const AdminLogin = () => {
         <p className="text-gray-500 mt-2">Secure login for administrators only</p>
       </div>
 
-      <form onSubmit={handleLogin} className="p-6 bg-white shadow-md rounded-lg w-full max-w-md">
+      <form onSubmit={handleLogin} className="p-6 bg-white shadow-md rounded-lg max-w-md">
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="email">
             Email
           </label>
           <input
-            className="w-full px-3 py-2 border border-gray-300 rounded text-gray-700 focus:outline-none focus:border-[#4a4a9c]"
             id="email"
             type="email"
             placeholder="admin@example.com"
             value={email}
-            onChange={e => setEmail(e.target.value)}
-            disabled={loading}
+            onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={loading}
+            className="w-full px-3 py-2 border border-gray-300 rounded text-gray-700 focus:outline-none focus:border-[#4a4a9c]"
           />
         </div>
 
@@ -82,15 +80,31 @@ const AdminLogin = () => {
             Password
           </label>
           <input
-            className="w-full px-3 py-2 border border-gray-300 rounded text-gray-700 focus:outline-none focus:border-[#4a4a9c]"
             id="password"
             type="password"
             placeholder="••••••••"
             value={password}
-            onChange={e => setPassword(e.target.value)}
-            disabled={loading}
+            onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={loading}
+            className="w-full px-3 py-2 border border-gray-300 rounded text-gray-700 focus:outline-none focus:border-[#4a4a9c]"
           />
+        </div>
+
+        <div className="flex items-center mb-4">
+          <input
+            id="rememberMe"
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            className="w-4 h-4 text-[#4a4a9c] border-gray-300 rounded focus:ring-[#4a4a9c]"
+          />
+          <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-600">
+            Remember me
+          </label>
+          <a href="#" className="ml-auto text-sm text-[#4a4a9c] hover:underline">
+            Forgot password?
+          </a>
         </div>
 
         {error && (
@@ -99,29 +113,9 @@ const AdminLogin = () => {
           </div>
         )}
 
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center">
-            <input
-              id="remember-me"
-              type="checkbox"
-              className="h-4 w-4 text-[#4a4a9c] border-gray-300 rounded"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-            />
-            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-              Remember me
-            </label>
-          </div>
-          <div className="text-sm">
-            <a href="#" className="text-[#4a4a9c] hover:underline">
-              Forgot password?
-            </a>
-          </div>
-        </div>
-
         <button
-          className="w-full bg-[#4a4a9c] text-white py-2 px-4 rounded font-medium focus:outline-none flex justify-center items-center"
           type="submit"
+          className="w-full bg-[#4a4a9c] text-white py-2 px-4 rounded font-medium focus:outline-none flex justify-center items-center"
           disabled={loading}
         >
           {loading ? (
@@ -134,11 +128,12 @@ const AdminLogin = () => {
       </form>
 
       <div className="text-center mt-4 w-full max-w-md">
-        <div className="bg-gray-200 p-4 rounded-lg">
-          <p className="text-gray-700 font-medium mb-2">Not an administrator?</p>
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-gray-600 mb-2">Not an administrator?</p>
           <button
             onClick={() => navigate('/login')}
-            className="border border-gray-400 bg-white text-gray-700 py-2 px-4 rounded font-medium hover:bg-gray-50 focus:outline-none"
+            className="border border-gray-400 bg-white text-gray-700 py-2 px-4 rounded font-medium hover:bg-gray-100 focus:outline-none"
+            type="button"
             disabled={loading}
           >
             Go to User Login

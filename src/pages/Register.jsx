@@ -68,7 +68,7 @@ export default function RegisterPage() {
       </div>
 
 
-        <form onSubmit={handleRegister} className="p-6 bg-white shadow-md rounded-lg w-full max-w-md">
+        <form onSubmit={handleRegister} className="p-6 bg-white shadow-md rounded-lg  max-w-md">
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="name">
               Full Name

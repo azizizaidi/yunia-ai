@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../services/api";
-import Loader from "../components/Loader";
-import Card from "../components/Card";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -60,103 +58,99 @@ const Login = () => {
         <p className="text-gray-500 mt-2">Welcome back! Please sign in to continue</p>
       </div>
 
-      <form onSubmit={handleLogin} className="p-6 bg-white shadow-md rounded-lg w-full max-w-md">
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="email">
-              Email
-            </label>
-            <input
-              className="w-full px-3 py-2 border border-gray-300 rounded text-gray-700 focus:outline-none focus:border-[#6b6bec]"
-              id="email"
-              type="email"
-              placeholder="your@email.com"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              disabled={loading}
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="password">
-              Password
-            </label>
-            <input
-              className="w-full px-3 py-2 border border-gray-300 rounded text-gray-700 focus:outline-none focus:border-[#6b6bec]"
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              disabled={loading}
-              required
-            />
-          </div>
-
-          {error && (
-            <div className="mb-4 text-red-500 text-sm">
-              {error}
-            </div>
-          )}
-
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                type="checkbox"
-                className="h-4 w-4 text-[#6b6bec] border-gray-300 rounded"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-                Remember me
-              </label>
-            </div>
-            <div className="text-sm">
-              <a href="#" className="text-[#6b6bec] hover:underline">
-                Forgot password?
-              </a>
-            </div>
-          </div>
-
-          <button
-            className="w-full bg-[#6b6bec] text-white py-2 px-4 rounded font-medium focus:outline-none flex justify-center items-center"
-            type="submit"
+      <form onSubmit={handleLogin} className="p-6 bg-white shadow-md rounded-lg max-w-md">
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="email">
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            placeholder="your@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
             disabled={loading}
-          >
-            {loading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-                Signing in...
-              </>
-            ) : "Sign In"}
-          </button>
-        </form>
+            className="w-full px-3 py-2 border border-gray-300 rounded text-gray-700 focus:outline-none focus:border-[#6b6bec]"
+          />
+        </div>
 
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="password">
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            disabled={loading}
+            className="w-full px-3 py-2 border border-gray-300 rounded text-gray-700 focus:outline-none focus:border-[#6b6bec]"
+          />
+        </div>
+
+        <div className="flex items-center mb-4">
+          <input
+            id="rememberMe"
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            className="w-4 h-4 text-[#6b6bec] border-gray-300 rounded focus:ring-[#6b6bec]"
+          />
+          <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-600">
+            Remember me
+          </label>
+          <a href="#" className="ml-auto text-sm text-[#6b6bec] hover:underline">
+            Forgot password?
+          </a>
+        </div>
+
+        {error && (
+          <div className="mb-4 text-red-500 text-sm">
+            {error}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          className="w-full bg-[#6b6bec] text-white py-2 px-4 rounded font-medium focus:outline-none flex justify-center items-center"
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+              Signing in...
+            </>
+          ) : "Sign In"}
+        </button>
+      </form>
 
       <div className="text-center mt-4 w-full max-w-md">
-        <div className="flex flex-col space-y-4">
-          <div className="bg-white p-4 rounded-lg shadow-md">
-            <p className="text-gray-600 mb-2">Don't have an account?</p>
-            <button
-              onClick={() => navigate('/register')}
-              className="border border-[#6b6bec] bg-white text-[#6b6bec] py-2 px-4 rounded font-medium hover:bg-[#f5f7ff] focus:outline-none"
-              disabled={loading}
-            >
-              Create New Account
-            </button>
-          </div>
-
-          <div className="bg-gray-200 p-4 rounded-lg">
-            <p className="text-gray-700 font-medium mb-2">Are you an administrator?</p>
-            <button
-              onClick={() => navigate('/admin/login')}
-              className="border border-gray-400 bg-white text-gray-700 py-2 px-4 rounded font-medium hover:bg-gray-50 focus:outline-none"
-              disabled={loading}
-            >
-              Go to Admin Login
-            </button>
-          </div>
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-gray-600 mb-2">Don't have an account?</p>
+          <button
+            onClick={() => navigate('/register')}
+            className="border border-[#6b6bec] bg-white text-[#6b6bec] py-2 px-4 rounded font-medium hover:bg-[#f5f7ff] focus:outline-none"
+            type="button"
+            disabled={loading}
+          >
+            Create New Account
+          </button>
+        </div>
+      </div>
+      <div className="text-center mt-4 w-full max-w-md">
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-gray-600 mb-2">Are you an administrator?</p>
+          <button
+            onClick={() => navigate('/admin/login')}
+            className="btn btn-primary"
+            type="button"
+            disabled={loading}
+          >
+            Go to Admin Login
+          </button>
         </div>
       </div>
     </div>

@@ -6,6 +6,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import PublicRoute from "./components/PublicRoute";
 import ProtectedRoute from "./components/ProtectedRoute";
+import TestComponent from "./components/TestComponent";
 
 function App() {
   return (
@@ -55,6 +56,12 @@ function App() {
               <Dashboard />
             </ProtectedRoute>
           }
+        />
+
+        {/* Test route for Tailwind and DaisyUI */}
+        <Route
+          path="/test"
+          element={<TestComponent />}
         />
 
         {/* Redirect ke login untuk semua laluan yang tidak dikenali */}
