@@ -1,9 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
-import UserProfile from "../components/dashboard/UserProfile";
-import TaskList from "../components/dashboard/TaskList";
-import ReminderList from "../components/dashboard/ReminderList";
+import ChatDashboard from "../components/chat/ChatDashboard";
 import useAuth from "../hooks/useAuth";
 
 /**
@@ -42,18 +40,11 @@ const DashboardPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="p-6 max-w-4xl mx-auto">
-        {/* User profile section with logout button */}
-        <UserProfile />
+      <div className="p-2 max-w-7xl mx-auto">
+        
 
-        {/* Main content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Task list section */}
-          <TaskList />
-
-          {/* Reminders section */}
-          <ReminderList />
-        </div>
+        {/* Chat and Voice Interface */}
+        <ChatDashboard />
       </div>
     </DashboardLayout>
   );

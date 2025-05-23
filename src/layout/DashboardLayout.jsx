@@ -11,15 +11,24 @@ export default function DashboardLayout({ children }) {
   };
 
   return (
-    <div className="drawer lg:drawer-open relative">
-      <input id="drawer-sidebar" type="checkbox" className="drawer-toggle" />
-    <div className="drawer-content flex flex-col transition-all duration-300">
-
-        <Header />
-        <main className="flex-1 p-6 bg-base-100">{children}</main>
-        <Footer />
-      </div>
+    <>
+      {/* Sidebar tetap di kiri */}
       <Sidebar onToggle={handleSidebarToggle} />
-    </div>
+
+      {/* Main Content */}
+      <div
+        className={`transition-all duration-300 ${
+          sidebarCollapsed ? "ml-20" : "ml-64"
+        }`}
+      >
+        <div className="flex flex-col min-h-screen">
+          <Header />
+          <main className="flex-1 p-4 bg-base-100 overflow-y-auto">
+            {children}
+          </main>
+          <Footer />
+        </div>
+      </div>
+    </>
   );
 }
