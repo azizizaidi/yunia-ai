@@ -1,13 +1,16 @@
 /**
  * Gemini API service for chat functionality
  * Uses Google's Gemini API for generating responses
- * 
+ *
  * Note: You need to get an API key from Google AI Studio (https://aistudio.google.com/)
  * The free tier includes 1,500 requests per day with Gemini 1.5 Flash
+ *
+ * Environment Variables:
+ * - VITE_GEMINI_API_KEY: Your Gemini API key (stored in .env file)
  */
 
-// Replace with your actual API key from Google AI Studio
-const API_KEY = "AIzaSyCtXpl_I5cdNGr2H2IvtFK4taZ9_a1pJ6s";
+// Get API key from environment variables
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
 /**
@@ -67,10 +70,10 @@ export const sendMessageToGemini = async (messages) => {
     }
 
     const data = await response.json();
-    
+
     // Extract the response text
     const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't generate a response.";
-    
+
     return {
       content: responseText,
       role: "assistant",
@@ -91,18 +94,21 @@ export const sendMessageToGemini = async (messages) => {
 /**
  * Alternative implementation using Hugging Face Inference API
  * Uncomment and use this if you prefer Hugging Face
+ *
+ * Environment Variables:
+ * - VITE_HUGGINGFACE_API_KEY: Your Hugging Face API key (stored in .env file)
  */
 /*
 const HF_API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2";
-const HF_API_KEY = "YOUR_HUGGINGFACE_API_KEY"; // Get from huggingface.co
+const HF_API_KEY = import.meta.env.VITE_HUGGINGFACE_API_KEY; // Get from huggingface.co
 
 export const sendMessageToHuggingFace = async (messages) => {
   try {
     // Format the conversation history for the model
-    const conversation = messages.map(msg => 
+    const conversation = messages.map(msg =>
       `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`
     ).join("\n");
-    
+
     const response = await fetch(HF_API_URL, {
       method: "POST",
       headers: {
@@ -126,10 +132,10 @@ export const sendMessageToHuggingFace = async (messages) => {
 
     const data = await response.json();
     const generatedText = data[0]?.generated_text || "Sorry, I couldn't generate a response.";
-    
+
     // Extract only the assistant's response
     const assistantResponse = generatedText.split("Assistant:").pop().trim();
-    
+
     return {
       content: assistantResponse,
       role: "assistant",
