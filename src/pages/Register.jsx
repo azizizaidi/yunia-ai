@@ -1,8 +1,7 @@
 // src/pages/RegisterPage.jsx
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { registerUser, getCurrentUser } from "../services/api";
-import Card from "../components/Card";
+import { registerUser } from "../services/api";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -10,17 +9,7 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [agreeToTerms, setAgreeToTerms] = useState(false);
   const navigate = useNavigate();
-
-  // Check if user is already logged in
-  useEffect(() => {
-    const user = getCurrentUser();
-    if (user) {
-      // If user is already logged in, redirect to dashboard
-      navigate("/dashboard", { replace: true });
-    }
-  }, [navigate]);
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -34,12 +23,6 @@ export default function RegisterPage() {
     // Validate password length
     if (password.length < 6) {
       setError("Password must be at least 6 characters long");
-      return;
-    }
-
-    // Validate terms agreement
-    if (!agreeToTerms) {
-      setError("You must agree to the Terms of Service and Privacy Policy");
       return;
     }
 
@@ -70,14 +53,21 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f5f7ff]">
       <div className="text-center mb-6">
+        <div className="flex justify-center mb-4">
+          <div className="bg-[#6b6bec] p-3 rounded-full">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-white" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+            </svg>
+          </div>
+        </div>
         <h1 className="text-3xl font-bold text-[#6b6bec]">Create Account</h1>
         <p className="text-gray-500 mt-2">Join Yunia AI and start your journey</p>
       </div>
 
-    
-        <form onSubmit={handleRegister} className="p-6">
+
+        <form onSubmit={handleRegister} className="p-6 bg-white shadow-md rounded-lg  max-w-md">
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="name">
               Full Name
@@ -133,8 +123,6 @@ export default function RegisterPage() {
             </div>
           )}
 
-     
-
           <button
             type="submit"
             className="w-full bg-[#6b6bec] text-white py-2 px-4 rounded font-medium focus:outline-none flex justify-center items-center"
@@ -148,18 +136,20 @@ export default function RegisterPage() {
             ) : "Create Account"}
           </button>
         </form>
-    
 
-      <div className="text-center mt-4 w-full max-w-sm">
-        <p className="text-gray-600 mb-2">Already have an account?</p>
-        <button
-          onClick={() => navigate('/login')}
-          className=" border border-gray-300 bg-white text-gray-700 py-2 px-4 rounded font-medium hover:bg-gray-50 focus:outline-none"
-          type="button"
-          disabled={loading}
-        >
-          Sign In
-        </button>
+
+      <div className="text-center mt-4 w-full max-w-md">
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-gray-600 mb-2">Already have an account?</p>
+          <button
+            onClick={() => navigate('/login')}
+            className="border border-[#6b6bec] bg-white text-[#6b6bec] py-2 px-4 rounded font-medium hover:bg-[#f5f7ff] focus:outline-none"
+            type="button"
+            disabled={loading}
+          >
+            Sign In
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 export default function Button({ children, ...props }) {
   return (
     <button
-      className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded"
+      className="badge badge-primary"
       {...props}
     >
       {children}
