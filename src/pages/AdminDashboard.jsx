@@ -43,7 +43,16 @@ const AdminDashboard = () => {
 
   const handleLogout = () => {
     logoutUser();
-    navigate("/admin/login");
+
+    // Add timestamp parameter to ensure login page is not cached
+    const timestamp = new Date().getTime();
+
+    // Redirect to admin login page
+    navigate(`/admin/login?t=${timestamp}`, { replace: true });
+  };
+
+  const showLogoutModal = () => {
+    document.getElementById('logout_modal_admin').showModal();
   };
 
   return (
@@ -58,7 +67,7 @@ const AdminDashboard = () => {
             <h1 className="text-2xl font-bold">Admin Dashboard</h1>
           </div>
           <button
-            onClick={handleLogout}
+            onClick={showLogoutModal}
             className="bg-white text-[#4a4a9c] px-4 py-2 rounded-md font-medium hover:bg-gray-100 focus:outline-none"
           >
             Logout
@@ -89,7 +98,7 @@ const AdminDashboard = () => {
             </button>
           </div>
 
-    
+
 
           {/* System Settings Section */}
           <div className="bg-white shadow-md rounded-lg p-6">
@@ -104,6 +113,28 @@ const AdminDashboard = () => {
           </div>
         </div>
       </main>
+
+      {/* Logout Confirmation Modal */}
+      <dialog id="logout_modal_admin" className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">Confirm Logout</h3>
+          <p className="py-4">Are you sure you want to logout from the admin panel?</p>
+          <div className="modal-action">
+            <form method="dialog">
+              <button className="btn btn-outline mr-2">Cancel</button>
+            </form>
+            <button
+              className="btn btn-error"
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
     </div>
   );
 };

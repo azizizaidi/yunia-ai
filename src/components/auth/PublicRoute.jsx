@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import useAuth from "../hooks/useAuth";
+import useAuth from "../../hooks/useAuth";
 
 /**
  * PublicRoute component for routes that should not be accessible when logged in

@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "../services/api";
-import Card from "../components/Card";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");

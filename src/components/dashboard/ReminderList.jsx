@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { getReminders } from "../services/api";
-import Loader from "./Loader";
+import { getReminders } from "../../services/api";
+import Loader from "../ui/Loader";
 
 /**
  * ReminderList component for displaying a list of reminders

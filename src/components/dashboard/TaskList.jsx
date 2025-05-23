@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { getTasks } from "../services/api";
-import Loader from "./Loader";
+import { getTasks } from "../../services/api";
+import Loader from "../ui/Loader";
 
 /**
  * TaskList component for displaying a list of tasks
@@ -50,8 +50,8 @@ const TaskList = () => {
             <div className="flex justify-between">
               <span className="font-medium">{task.title}</span>
               <span className={`text-sm px-2 py-1 rounded ${
-                task.status === "pending" 
-                  ? "bg-yellow-100 text-yellow-800" 
+                task.status === "pending"
+                  ? "bg-yellow-100 text-yellow-800"
                   : "bg-green-100 text-green-800"
               }`}>
                 {task.status}

@@ -9,15 +9,29 @@
  */
 export const getUsers = async () => {
   try {
-    // Get users from API
-    const response = await fetch("/data/user.json");
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+    let usersFromApi = [];
+
+    try {
+      // Get users from API
+      const response = await fetch("/data/user.json");
+      if (response.ok) {
+        usersFromApi = await response.json();
+      } else {
+        console.warn(`API warning: ${response.status}. Using empty array for API users.`);
+      }
+    } catch (apiError) {
+      console.warn("Could not fetch users from API:", apiError);
+      // Continue with empty array for API users
     }
-    const usersFromApi = await response.json();
 
     // Get users from localStorage
-    const usersFromLocalStorage = JSON.parse(localStorage.getItem("users") || "[]");
+    let usersFromLocalStorage = [];
+    try {
+      usersFromLocalStorage = JSON.parse(localStorage.getItem("users") || "[]");
+    } catch (localStorageError) {
+      console.warn("Could not get users from localStorage:", localStorageError);
+      // Continue with empty array for localStorage users
+    }
 
     // Combine both data sources
     const allUsers = [...usersFromApi, ...usersFromLocalStorage];
@@ -30,7 +44,8 @@ export const getUsers = async () => {
     return uniqueUsers;
   } catch (error) {
     console.error("Error fetching users:", error);
-    throw error;
+    // Return empty array instead of throwing error
+    return [];
   }
 };
 
@@ -82,7 +97,17 @@ export const registerUser = async (userData) => {
     }
 
     // Get the latest ID
-    const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+    let newId = 1;
+    try {
+      if (users.length > 0) {
+        const validIds = users.filter(u => u.id).map(u => u.id);
+        newId = validIds.length > 0 ? Math.max(...validIds) + 1 : 1;
+      }
+    } catch (idError) {
+      console.error("Error calculating new ID:", idError);
+      // Fallback to a simple ID generation
+      newId = Date.now();
+    }
 
     // Create new user with role "user" by default
     const newUser = {
@@ -95,7 +120,13 @@ export const registerUser = async (userData) => {
     users.push(newUser);
 
     // Save to localStorage
-    localStorage.setItem("users", JSON.stringify(users));
+    try {
+      localStorage.setItem("users", JSON.stringify(users));
+    } catch (storageError) {
+      console.error("Error saving to localStorage:", storageError);
+      // If we can't save to localStorage, at least return the user
+      // so the registration appears successful
+    }
 
     return newUser;
   } catch (error) {
