@@ -184,3 +184,42 @@ export const getCurrentUser = () => {
   const userData = localStorage.getItem("user");
   return userData ? JSON.parse(userData) : null;
 };
+
+/**
+ * Get notifications for the current user
+ * @returns {Promise<Array>} Array of notifications
+ */
+export const getNotifications = async () => {
+  try {
+    // In a real app, this would fetch from an API endpoint
+    // For now, we'll return mock data
+    const mockNotifications = [
+      {
+        id: 1,
+        type: "task",
+        msg: "You have a new task.",
+        time: "5 minutes ago",
+        read: false
+      },
+      {
+        id: 2,
+        type: "calendar",
+        msg: "Coaching session at 3PM today.",
+        time: "1 hour ago",
+        read: false
+      },
+      {
+        id: 3,
+        type: "payment",
+        msg: "Subscription payment successful.",
+        time: "2 days ago",
+        read: true
+      },
+    ];
+
+    return mockNotifications;
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    return [];
+  }
+};

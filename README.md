@@ -6,16 +6,16 @@
   <img src="yunia-ai.png" alt="Yunia AI Logo" width="800" />
 </p>
   <h3>✨ "Hi, I'm Yunia — your personal AI assistant." ✨</h3>
-  
+
   <div align="center">
     <img alt="React" src="https://img.shields.io/badge/React-18.0-blue?style=for-the-badge&logo=react&logoColor=white" />
     <img alt="Vite" src="https://img.shields.io/badge/Vite-Build-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
     <img alt="Tailwind" src="https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" />
     <img alt="License" src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" />
   </div>
-  
+
   <br />
-  
+
   <a href="#-overview">Overview</a> •
   <a href="#-features">Features</a> •
   <a href="#-tech-stack">Tech Stack</a> •
@@ -147,6 +147,7 @@ Built as part of a **14-day bootcamp frontend project**, this system is the foun
 | Location     | Geolocation API                         |
 | Traffic      | Google Maps Directions API              |
 | Calendar     | Google Calendar API                     |
+| AI Services  | Gemini API (Google)                     |
 | Deployment   | Vercel                                   |
 
 </details>
@@ -185,6 +186,8 @@ yunia-ai/
 │   ├── App.jsx # App root
 │   └── main.jsx # Entry point
 │
+├── .env # 🔒 Environment variables (API keys, not in Git)
+├── .env.example # 📝 Example environment variables template
 ├── db.json # 🔧 Mock data for development
 ├── vercel.json # ⚙️ Deployment configuration
 ├── README.md # 📘 This file
@@ -235,10 +238,19 @@ yunia-ai/
         <br />Mock + real API endpoints
       </td>
       <td align="center">
+        <img src="https://img.icons8.com/color/48/000000/api-settings.png" />
+        <br /><strong>api-setup.md</strong>
+        <br />API keys setup guide
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
         <img src="https://img.icons8.com/color/48/000000/notepad.png" />
         <br /><strong>dev-notes.md</strong>
         <br />Developer progress log
       </td>
+      <td align="center"></td>
+      <td align="center"></td>
     </tr>
   </table>
 </div>
