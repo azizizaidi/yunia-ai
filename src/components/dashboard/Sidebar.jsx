@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { logoutUser, getCurrentUser } from "../../services/api";
+import { logoutUser, getCurrentUser, getUserProfile } from "../../services/api";
 
 const menu = [
   {
@@ -18,7 +18,7 @@ const menu = [
       { label: "Reminders", to: "/reminders", icon: "notifications" },
       { label: "Task Manager", to: "/tasks", icon: "task_alt" },
       { label: "Schedule", to: "/schedule", icon: "schedule" },
-      { label: "Memory", to: "/memory", icon: "psychology" },
+      { label: "Memory Manager", to: "/memory", icon: "memory" },
     ],
   },
   {
@@ -47,6 +47,8 @@ export default function Sidebar({ onToggle }) {
   const [collapsed, setCollapsed] = useState(false);
   const [activeItem, setActiveItem] = useState("/dashboard");
   const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(true);
 
   useEffect(() => {
     setActiveItem(location.pathname);
@@ -56,6 +58,25 @@ export default function Sidebar({ onToggle }) {
     const currentUser = getCurrentUser();
     setUser(currentUser);
   }, []);
+
+  // Fetch user profile data
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        setProfileLoading(true);
+        const profile = await getUserProfile();
+        setUserProfile(profile);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchUserProfile();
+    }
+  }, [user]);
 
   const handleLogout = () => {
     logoutUser();
@@ -164,7 +185,10 @@ export default function Sidebar({ onToggle }) {
           {!collapsed && user && (
             <div className="flex items-center mb-3">
               <div className="w-8 h-8 rounded-full overflow-hidden">
-                <img src="https://i.pravatar.cc/32" alt={user.name || "User"} />
+                <img
+                  src={userProfile?.avatar || `https://i.pravatar.cc/32?u=${user.email}`}
+                  alt={user.name || "User"}
+                />
               </div>
               <div className="ml-3 flex-1">
                 <div className="text-sm font-medium text-gray-900 truncate">{user.name || "User"}</div>
@@ -177,7 +201,10 @@ export default function Sidebar({ onToggle }) {
             <div className="flex flex-col items-center space-y-2">
               {user && (
                 <div className="w-8 h-8 rounded-full overflow-hidden">
-                  <img src="https://i.pravatar.cc/32" alt={user.name || "User"} />
+                  <img
+                    src={userProfile?.avatar || `https://i.pravatar.cc/32?u=${user.email}`}
+                    alt={user.name || "User"}
+                  />
                 </div>
               )}
               <div className="tooltip tooltip-right" data-tip="Logout">

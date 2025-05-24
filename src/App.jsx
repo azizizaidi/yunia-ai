@@ -2,7 +2,9 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-
+import MemoryExamplesPage from "./pages/MemoryExamplesPage";
+import TestMemory from "./pages/TestMemory";
+import MemoryManager from "./pages/MemoryManager";
 import HabitTracker from "./pages/HabitTracker";
 import DailyBriefings from "./pages/DailyBriefings";
 import ReminderPanel from "./pages/ReminderPanel";
@@ -23,11 +25,13 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import PublicRoute from "./components/auth/PublicRoute";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+// import { AIMemoryProvider } from "./context/AIMemoryContext";
 
 function App() {
   return (
-    <Router>
-      <Routes>
+    // <AIMemoryProvider>
+      <Router>
+        <Routes>
         {/* Halaman awam - tidak boleh diakses selepas login */}
         <Route
           path="/login"
@@ -158,10 +162,27 @@ function App() {
           path="/memory"
           element={
             <ProtectedRoute requiredRole="user">
-              <MemoryStorage />
+              <MemoryManager />
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/memory-test"
+          element={
+            <ProtectedRoute requiredRole="user">
+              <TestMemory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/memory-examples"
+          element={
+            <ProtectedRoute requiredRole="user">
+              <MemoryExamplesPage />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/schedule"
           element={
@@ -196,8 +217,9 @@ function App() {
             </PublicRoute>
           }
         />
-      </Routes>
-    </Router>
+        </Routes>
+      </Router>
+    // </AIMemoryProvider>
   );
 }
 

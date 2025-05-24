@@ -1,0 +1,220 @@
+{
+  "conversations": [
+    {
+      "id": 1,
+      "userId": 1,
+      "title": "Morning Weather Check",
+      "content": "User asked about today's weather. Yunia provided sunny forecast with 28°C temperature and suggested bringing sunglasses.",
+      "aiType": "gemini",
+      "type": "weather_query",
+      "timestamp": "2025-01-27T08:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "userId": 1,
+      "title": "Daily Schedule Planning",
+      "content": "User requested help planning their day. Yunia organized tasks by priority and suggested optimal timing.",
+      "aiType": "gemini",
+      "type": "schedule_planning",
+      "timestamp": "2025-01-27T08:30:00.000Z"
+    },
+    {
+      "id": 3,
+      "userId": 1,
+      "title": "Voice Reminder Setup",
+      "content": "User set up voice reminders for important meetings. Yunia confirmed voice notifications for 2 PM meeting.",
+      "aiType": "rime",
+      "type": "voice_reminder",
+      "timestamp": "2025-01-27T09:00:00.000Z"
+    }
+  ],
+  "reminders": [
+    {
+      "id": 1,
+      "userId": 1,
+      "title": "Team Meeting",
+      "time": "14:00",
+      "note": "Important project update meeting with the development team",
+      "type": "work",
+      "status": "active",
+      "createdAt": "2025-01-27T08:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "userId": 1,
+      "title": "Doctor Appointment",
+      "time": "16:30",
+      "note": "Annual health checkup at City Medical Center",
+      "type": "health",
+      "status": "active",
+      "createdAt": "2025-01-27T08:15:00.000Z"
+    },
+    {
+      "id": 3,
+      "userId": 1,
+      "title": "Gym Session",
+      "time": "18:00",
+      "note": "Leg day workout at the fitness center",
+      "type": "personal",
+      "status": "completed",
+      "createdAt": "2025-01-26T19:00:00.000Z",
+      "updatedAt": "2025-01-26T18:30:00.000Z"
+    }
+  ],
+  "preferences": {
+    "aiPersonality": "friendly and helpful",
+    "preferredGreeting": "Hi! I'm Yunia, your personal AI assistant",
+    "voicePersonality": "warm and caring",
+    "theme": "light",
+    "notifications": true,
+    "language": "en",
+    "weatherLocation": "Kuala Lumpur",
+    "workingHours": {
+      "start": "09:00",
+      "end": "17:00"
+    },
+    "reminderPreferences": {
+      "voiceReminders": true,
+      "textReminders": true,
+      "advanceNotice": 15
+    },
+    "lastUpdated": "2025-01-27T08:00:00.000Z"
+  },
+  "environmentalData": [
+    {
+      "timestamp": "2025-01-27T08:00:00.000Z",
+      "userId": 1,
+      "weather": {
+        "temperature": 28,
+        "condition": "sunny",
+        "humidity": 65,
+        "location": "Kuala Lumpur",
+        "forecast": "Clear skies throughout the day"
+      },
+      "location": {
+        "city": "Kuala Lumpur",
+        "country": "Malaysia",
+        "coordinates": {
+          "lat": 3.139,
+          "lng": 101.6869
+        }
+      },
+      "traffic": {
+        "status": "moderate",
+        "estimatedDelay": "15 minutes",
+        "route": "Main route to office",
+        "alternativeRoutes": ["Highway route", "City center route"]
+      }
+    },
+    {
+      "timestamp": "2025-01-27T12:00:00.000Z",
+      "userId": 1,
+      "weather": {
+        "temperature": 32,
+        "condition": "partly cloudy",
+        "humidity": 70,
+        "location": "Kuala Lumpur",
+        "forecast": "Possible light rain in the evening"
+      },
+      "location": {
+        "city": "Kuala Lumpur",
+        "country": "Malaysia",
+        "coordinates": {
+          "lat": 3.139,
+          "lng": 101.6869
+        }
+      },
+      "traffic": {
+        "status": "heavy",
+        "estimatedDelay": "25 minutes",
+        "route": "Main route to office",
+        "alternativeRoutes": ["Highway route (recommended)", "City center route"]
+      }
+    }
+  ],
+  "aiMemory": {
+    "gemini": [
+      {
+        "message": "What's the weather like today?",
+        "type": "user_question",
+        "mode": "text",
+        "speaker": "User",
+        "timestamp": "2025-01-27T08:00:00.000Z"
+      },
+      {
+        "message": "Hi! I'm Yunia. It's sunny and 28°C today in Kuala Lumpur. Perfect weather for outdoor activities! Don't forget your sunglasses.",
+        "type": "ai_response",
+        "mode": "text",
+        "aiName": "Yunia",
+        "speaker": "Yunia",
+        "timestamp": "2025-01-27T08:00:15.000Z"
+      },
+      {
+        "message": "Can you help me plan my day?",
+        "type": "user_question",
+        "mode": "text",
+        "speaker": "User",
+        "timestamp": "2025-01-27T08:30:00.000Z"
+      },
+      {
+        "message": "Of course! Based on your schedule, I recommend starting with your most important tasks in the morning when you're most focused. You have a team meeting at 2 PM and a doctor's appointment at 4:30 PM.",
+        "type": "ai_response",
+        "mode": "text",
+        "aiName": "Yunia",
+        "speaker": "Yunia",
+        "timestamp": "2025-01-27T08:30:15.000Z"
+      }
+    ],
+    "rime": [
+      {
+        "message": "This is Yunia speaking. Voice reminder: Don't forget your team meeting at 2 PM today. I'll remind you 15 minutes before.",
+        "type": "voice_reminder",
+        "mode": "voice",
+        "aiName": "Yunia",
+        "speaker": "Yunia",
+        "timestamp": "2025-01-27T09:00:00.000Z"
+      },
+      {
+        "message": "Good morning! This is Yunia with your daily briefing. Today's weather is sunny and 28°C. You have 2 important appointments scheduled.",
+        "type": "daily_briefing",
+        "mode": "voice",
+        "aiName": "Yunia",
+        "speaker": "Yunia",
+        "timestamp": "2025-01-27T07:00:00.000Z"
+      }
+    ]
+  },
+  "sharedMemory": {
+    "currentMode": "mixed",
+    "aiName": "Yunia",
+    "aiPersonality": "friendly and helpful",
+    "weatherData": {
+      "temperature": 28,
+      "condition": "sunny",
+      "lastUpdated": "2025-01-27T08:00:00.000Z",
+      "providedBy": "Yunia"
+    },
+    "activeReminders": [
+      {
+        "id": 1,
+        "title": "Team Meeting",
+        "time": "14:00",
+        "type": "work",
+        "setBy": "Yunia"
+      },
+      {
+        "id": 2,
+        "title": "Doctor Appointment",
+        "time": "16:30",
+        "type": "health",
+        "setBy": "User"
+      }
+    ],
+    "userPreferences": {
+      "aiName": "Yunia",
+      "preferredGreeting": "Hi! I'm Yunia",
+      "voicePersonality": "warm and caring"
+    },
+    "lastActivity": "2025-01-27T09:00:00.000Z"
+  }
+}

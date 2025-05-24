@@ -1,8 +1,9 @@
 // src/pages/AdminDashboard.jsx
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { logoutUser } from "../services/api";
+import { logoutUser, getUserStats, getSystemSettings } from "../services/api";
 import useAuth from "../hooks/useAuth";
+import Loader from "../components/ui/Loader";
 
 /**
  * Admin Dashboard page component
@@ -11,6 +12,10 @@ import useAuth from "../hooks/useAuth";
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isAdmin } = useAuth();
+  const [userStats, setUserStats] = useState(null);
+  const [systemSettings, setSystemSettings] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     // Add event listener to check authentication whenever the page becomes active
@@ -39,7 +44,34 @@ const AdminDashboard = () => {
       window.removeEventListener("popstate", checkAuth);
       window.removeEventListener("pageshow", checkAuth);
     };
-  }, [navigate]);
+  }, [navigate, isAuthenticated, isAdmin]);
+
+  // Fetch admin dashboard data
+  useEffect(() => {
+    const fetchAdminData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const [statsData, settingsData] = await Promise.all([
+          getUserStats(),
+          getSystemSettings()
+        ]);
+
+        setUserStats(statsData);
+        setSystemSettings(settingsData);
+      } catch (err) {
+        setError("Failed to load admin dashboard data");
+        console.error("Error fetching admin data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isAuthenticated() && isAdmin()) {
+      fetchAdminData();
+    }
+  }, [isAuthenticated, isAdmin]);
 
   const handleLogout = () => {
     logoutUser();
@@ -84,34 +116,90 @@ const AdminDashboard = () => {
           </p>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-12">
+            <Loader />
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+            <div className="flex items-center">
+              <span className="material-icons text-red-500 mr-2">error</span>
+              <p className="text-red-700">{error}</p>
+            </div>
+          </div>
+        )}
+
         {/* Admin Sections */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* User Management Section */}
-          <div className="bg-white shadow-md rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">User Management</h3>
-            <p className="text-gray-600 mb-4">Manage user accounts, permissions, and activities.</p>
-            <div className="bg-gray-100 p-4 rounded-md">
-              <p className="text-sm text-gray-500">Total Users: 0</p>
+        {!loading && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* User Management Section */}
+            <div className="bg-white shadow-md rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">User Management</h3>
+              <p className="text-gray-600 mb-4">Manage user accounts, permissions, and activities.</p>
+              <div className="bg-gray-100 p-4 rounded-md">
+                {userStats ? (
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-500">Total Users: {userStats.totalUsers}</p>
+                    <p className="text-sm text-gray-500">Active Users: {userStats.activeUsers}</p>
+                    <p className="text-sm text-gray-500">Admin Users: {userStats.adminUsers}</p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">Loading user stats...</p>
+                )}
+              </div>
+              <button className="mt-4 w-full bg-[#4a4a9c] text-white py-2 px-4 rounded font-medium hover:bg-[#3a3a7c] focus:outline-none">
+                Manage Users
+              </button>
             </div>
-            <button className="mt-4 w-full bg-[#4a4a9c] text-white py-2 px-4 rounded font-medium hover:bg-[#3a3a7c] focus:outline-none">
-              Manage Users
-            </button>
-          </div>
 
-
-
-          {/* System Settings Section */}
-          <div className="bg-white shadow-md rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">System Settings</h3>
-            <p className="text-gray-600 mb-4">Configure system settings and preferences.</p>
-            <div className="bg-gray-100 p-4 rounded-md">
-              <p className="text-sm text-gray-500">Last Updated: Never</p>
+            {/* System Settings Section */}
+            <div className="bg-white shadow-md rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">System Settings</h3>
+              <p className="text-gray-600 mb-4">Configure system settings and preferences.</p>
+              <div className="bg-gray-100 p-4 rounded-md">
+                {systemSettings ? (
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-500">
+                      Last Updated: {systemSettings.lastUpdated
+                        ? new Date(systemSettings.lastUpdated).toLocaleDateString()
+                        : 'Never'
+                      }
+                    </p>
+                    <p className="text-sm text-gray-500">Version: {systemSettings.version}</p>
+                    <p className="text-sm text-gray-500">Status: {systemSettings.status}</p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">Loading system info...</p>
+                )}
+              </div>
+              <button className="mt-4 w-full bg-[#4a4a9c] text-white py-2 px-4 rounded font-medium hover:bg-[#3a3a7c] focus:outline-none">
+                Manage Settings
+              </button>
             </div>
-            <button className="mt-4 w-full bg-[#4a4a9c] text-white py-2 px-4 rounded font-medium hover:bg-[#3a3a7c] focus:outline-none">
-              Manage Settings
-            </button>
+
+            {/* System Performance Section */}
+            {systemSettings?.performance && (
+              <div className="bg-white shadow-md rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">System Performance</h3>
+                <p className="text-gray-600 mb-4">Monitor system health and performance metrics.</p>
+                <div className="bg-gray-100 p-4 rounded-md">
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-500">Uptime: {systemSettings.performance.uptime}</p>
+                    <p className="text-sm text-gray-500">Response Time: {systemSettings.performance.responseTime}</p>
+                    <p className="text-sm text-gray-500">Error Rate: {systemSettings.performance.errorRate}</p>
+                  </div>
+                </div>
+                <button className="mt-4 w-full bg-[#4a4a9c] text-white py-2 px-4 rounded font-medium hover:bg-[#3a3a7c] focus:outline-none">
+                  View Details
+                </button>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </main>
 
       {/* Logout Confirmation Modal */}

@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "title": "Welcome to Yunia AI",
+    "preview": "Hi, I'm Yunia AI. How can I help you today?",
+    "date": "2025-01-27T08:00:00.000Z",
+    "isActive": true,
+    "userId": 1,
+    "messages": [
+      {
+        "id": 1,
+        "role": "assistant",
+        "content": "Hi, I'm Yunia AI. How can I help you today?",
+        "timestamp": "2025-01-27T08:00:00.000Z"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "title": "Daily Schedule Planning",
+    "preview": "Let me help you plan your day...",
+    "date": "2025-01-26T14:30:00.000Z",
+    "isActive": false,
+    "userId": 1,
+    "messages": [
+      {
+        "id": 1,
+        "role": "user",
+        "content": "Can you help me plan my day?",
+        "timestamp": "2025-01-26T14:30:00.000Z"
+      },
+      {
+        "id": 2,
+        "role": "assistant",
+        "content": "Of course! Let me help you plan your day. What are your main priorities today?",
+        "timestamp": "2025-01-26T14:30:15.000Z"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "title": "Weather and Traffic Update",
+    "preview": "Today's weather is sunny with light traffic...",
+    "date": "2025-01-25T07:15:00.000Z",
+    "isActive": false,
+    "userId": 1,
+    "messages": [
+      {
+        "id": 1,
+        "role": "user",
+        "content": "What's the weather and traffic like today?",
+        "timestamp": "2025-01-25T07:15:00.000Z"
+      },
+      {
+        "id": 2,
+        "role": "assistant",
+        "content": "Today's weather is sunny with a high of 28°C. Traffic is light on your usual routes. Perfect day for your commute!",
+        "timestamp": "2025-01-25T07:15:10.000Z"
+      }
+    ]
+  }
+]
