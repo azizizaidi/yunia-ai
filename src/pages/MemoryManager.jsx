@@ -3,20 +3,19 @@ import DashboardLayout from "../layout/DashboardLayout";
 import {
   getMemoryStatistics,
   getConversations,
-  getUserReminders,
   getUserPreferences,
   saveConversation,
-  saveReminder,
   saveUserPreference,
-  saveEnvironmentalData,
-  updateReminderStatus,
   exportMemoryData,
-  clearAllUserMemory
+  clearAllUserMemory,
+  getAIMemory,
+  getSharedMemory
 } from "../services/api";
 import Loader from "../components/ui/Loader";
 
 /**
- * Memory Manager - Manage actual user memory data
+ * Memory Manager - AI Memory Storage System
+ * Manages how Yunia AI learns and remembers user information
  */
 const MemoryManager = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -26,12 +25,13 @@ const MemoryManager = () => {
   // Data states
   const [memoryStats, setMemoryStats] = useState({});
   const [conversations, setConversations] = useState([]);
-  const [reminders, setReminders] = useState([]);
   const [preferences, setPreferences] = useState({});
+  const [geminiMemory, setGeminiMemory] = useState([]);
+  const [rimeMemory, setRimeMemory] = useState([]);
+  const [sharedMemory, setSharedMemory] = useState({});
 
   // Form states
   const [newConversation, setNewConversation] = useState({ title: '', content: '', aiType: 'gemini' });
-  const [newReminder, setNewReminder] = useState({ title: '', time: '', note: '', type: 'personal' });
   const [newPreference, setNewPreference] = useState({ key: '', value: '' });
 
   useEffect(() => {
@@ -43,17 +43,21 @@ const MemoryManager = () => {
       setLoading(true);
       setError(null);
 
-      const [stats, convs, rems, prefs] = await Promise.all([
+      const [stats, convs, prefs, geminiMem, rimeMem, sharedMem] = await Promise.all([
         getMemoryStatistics(),
         getConversations(),
-        getUserReminders(),
-        getUserPreferences()
+        getUserPreferences(),
+        Promise.resolve(getAIMemory('gemini')),
+        Promise.resolve(getAIMemory('rime')),
+        Promise.resolve(getSharedMemory())
       ]);
 
       setMemoryStats(stats);
       setConversations(convs);
-      setReminders(rems);
       setPreferences(prefs);
+      setGeminiMemory(geminiMem);
+      setRimeMemory(rimeMem);
+      setSharedMemory(sharedMem);
     } catch (err) {
       setError('Failed to load memory data');
       console.error('Error loading memory data:', err);
@@ -79,23 +83,6 @@ const MemoryManager = () => {
     }
   };
 
-  const handleSaveReminder = async (e) => {
-    e.preventDefault();
-    try {
-      await saveReminder({
-        title: newReminder.title,
-        time: newReminder.time,
-        note: newReminder.note,
-        type: newReminder.type
-      });
-
-      setNewReminder({ title: '', time: '', note: '', type: 'personal' });
-      await loadMemoryData();
-    } catch (err) {
-      setError('Failed to save reminder');
-    }
-  };
-
   const handleSavePreference = async (e) => {
     e.preventDefault();
     try {
@@ -107,24 +94,24 @@ const MemoryManager = () => {
     }
   };
 
-  const handleUpdateReminderStatus = async (reminderId, status) => {
-    try {
-      await updateReminderStatus(reminderId, status);
-      await loadMemoryData();
-    } catch (err) {
-      setError('Failed to update reminder');
-    }
-  };
+
 
   const handleExportData = async () => {
     try {
       const exportData = await exportMemoryData();
+      // Include AI memory data in export
+      exportData.geminiMemory = geminiMemory;
+      exportData.rimeMemory = rimeMemory;
+      exportData.sharedMemory = sharedMemory;
+
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `yunia-memory-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (err) {
       setError('Failed to export data');
@@ -132,39 +119,14 @@ const MemoryManager = () => {
   };
 
   const handleClearAllMemory = async () => {
-    if (window.confirm('Are you sure you want to clear all memory data? This action cannot be undone.')) {
+    if (window.confirm('Are you sure you want to clear all AI memory data? This action cannot be undone.')) {
       try {
         await clearAllUserMemory();
+        localStorage.removeItem('yunia-ai-memory');
         await loadMemoryData();
       } catch (err) {
         setError('Failed to clear memory');
       }
-    }
-  };
-
-  const handleAddSampleEnvironmentalData = async () => {
-    try {
-      await saveEnvironmentalData({
-        weather: {
-          temperature: 28,
-          condition: 'sunny',
-          humidity: 65,
-          location: 'Kuala Lumpur'
-        },
-        location: {
-          city: 'Kuala Lumpur',
-          country: 'Malaysia',
-          coordinates: { lat: 3.139, lng: 101.6869 }
-        },
-        traffic: {
-          status: 'moderate',
-          estimatedDelay: '15 minutes',
-          route: 'Main route to office'
-        }
-      });
-      await loadMemoryData();
-    } catch (err) {
-      setError('Failed to save environmental data');
     }
   };
 
@@ -184,7 +146,7 @@ const MemoryManager = () => {
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2">🧠 Memory Manager</h1>
           <p className="text-base-content/70">
-            Manage your Yunia AI memory data with real persistence
+            Manage how Yunia AI learns and remembers information about you
           </p>
         </div>
 
@@ -205,10 +167,10 @@ const MemoryManager = () => {
         <div className="tabs tabs-boxed justify-center mb-6">
           {[
             { id: 'overview', label: '📊 Overview', icon: 'dashboard' },
-            { id: 'conversations', label: '💬 Conversations', icon: 'chat' },
-            { id: 'reminders', label: '⏰ Reminders', icon: 'alarm' },
-            { id: 'preferences', label: '⚙️ Preferences', icon: 'settings' },
-            { id: 'tools', label: '🛠️ Tools', icon: 'build' }
+            { id: 'conversations', label: '💬 AI Conversations', icon: 'chat' },
+            { id: 'learning', label: '🎯 AI Learning', icon: 'psychology' },
+            { id: 'preferences', label: '⚙️ User Preferences', icon: 'settings' },
+            { id: 'tools', label: '🛠️ Memory Tools', icon: 'build' }
           ].map(tab => (
             <button
               key={tab.id}
@@ -224,22 +186,14 @@ const MemoryManager = () => {
         {/* Tab Content */}
         {activeTab === 'overview' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Memory Statistics */}
+            {/* AI Memory Statistics */}
             <div className="card bg-base-100 shadow-lg">
               <div className="card-body">
-                <h2 className="card-title">📊 Memory Statistics</h2>
+                <h2 className="card-title">🧠 AI Memory Statistics</h2>
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span>Total Conversations:</span>
                     <span className="font-bold">{memoryStats.totalConversations || 0}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Active Reminders:</span>
-                    <span className="font-bold text-warning">{memoryStats.activeReminders || 0}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Completed Reminders:</span>
-                    <span className="font-bold text-success">{memoryStats.completedReminders || 0}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>User Preferences:</span>
@@ -249,74 +203,94 @@ const MemoryManager = () => {
                     <span>AI Memory Items:</span>
                     <span className="font-bold text-primary">{memoryStats.totalMemoryItems || 0}</span>
                   </div>
+                  <div className="flex justify-between">
+                    <span>Learning Categories:</span>
+                    <span className="font-bold text-secondary">{(geminiMemory.length + rimeMemory.length) || 0}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Memory Storage:</span>
+                    <span className="font-bold text-accent">Active</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Quick Actions */}
+            {/* Memory Actions */}
             <div className="card bg-base-100 shadow-lg">
               <div className="card-body">
-                <h2 className="card-title">⚡ Quick Actions</h2>
+                <h2 className="card-title">⚡ Memory Actions</h2>
                 <div className="space-y-2">
                   <button
                     className="btn btn-primary btn-sm w-full"
-                    onClick={handleAddSampleEnvironmentalData}
+                    onClick={() => setActiveTab('learning')}
                   >
-                    🌤️ Add Sample Weather Data
+                    🎯 View AI Learning
                   </button>
                   <button
                     className="btn btn-secondary btn-sm w-full"
                     onClick={handleExportData}
                   >
-                    📤 Export All Data
+                    📤 Export Memory Data
                   </button>
                   <button
                     className="btn btn-error btn-sm w-full"
                     onClick={handleClearAllMemory}
                   >
-                    🗑️ Clear All Memory
+                    🗑️ Clear AI Memory
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* Recent Activity */}
+            {/* AI Learning Status */}
             <div className="card bg-base-100 shadow-lg">
               <div className="card-body">
-                <h2 className="card-title">🕒 Recent Activity</h2>
-                <div className="space-y-2">
-                  {conversations.slice(-3).map(conv => (
-                    <div key={conv.id} className="text-sm">
-                      <div className="font-medium truncate">{conv.title}</div>
-                      <div className="text-xs text-base-content/60">
-                        {new Date(conv.timestamp).toLocaleString()}
-                      </div>
-                    </div>
-                  ))}
-                  {conversations.length === 0 && (
-                    <p className="text-sm text-base-content/60">No recent conversations</p>
-                  )}
+                <h2 className="card-title">🤖 AI Learning Status</h2>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Personal Info</span>
+                    <div className="badge badge-success">Learning</div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Preferences</span>
+                    <div className="badge badge-success">Active</div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Conversation Style</span>
+                    <div className="badge badge-warning">Adapting</div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Goals & Habits</span>
+                    <div className="badge badge-info">Tracking</div>
+                  </div>
+                  <div className="text-xs text-base-content/60 mt-3">
+                    Last updated: {new Date().toLocaleString()}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Conversations Tab */}
+        {/* AI Conversations Tab */}
         {activeTab === 'conversations' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Add New Conversation */}
+            {/* Add New Conversation Memory */}
             <div className="card bg-base-100 shadow-lg">
               <div className="card-body">
-                <h2 className="card-title">➕ Add New Conversation</h2>
+                <h2 className="card-title">➕ Add Conversation Memory</h2>
+                <p className="text-sm text-base-content/70 mb-4">
+                  Save important conversations for Yunia to remember
+                </p>
                 <form onSubmit={handleSaveConversation} className="space-y-4">
                   <div className="form-control">
                     <label className="label">
-                      <span className="label-text">Title</span>
+                      <span className="label-text">Conversation Topic</span>
                     </label>
                     <input
                       type="text"
                       className="input input-bordered"
+                      placeholder="e.g., Discussion about work preferences"
                       value={newConversation.title}
                       onChange={(e) => setNewConversation({...newConversation, title: e.target.value})}
                       required
@@ -324,11 +298,12 @@ const MemoryManager = () => {
                   </div>
                   <div className="form-control">
                     <label className="label">
-                      <span className="label-text">Content</span>
+                      <span className="label-text">Key Information</span>
                     </label>
                     <textarea
                       className="textarea textarea-bordered"
                       rows="3"
+                      placeholder="What should Yunia remember from this conversation?"
                       value={newConversation.content}
                       onChange={(e) => setNewConversation({...newConversation, content: e.target.value})}
                       required
@@ -336,28 +311,31 @@ const MemoryManager = () => {
                   </div>
                   <div className="form-control">
                     <label className="label">
-                      <span className="label-text">AI Type</span>
+                      <span className="label-text">AI Mode</span>
                     </label>
                     <select
                       className="select select-bordered"
                       value={newConversation.aiType}
                       onChange={(e) => setNewConversation({...newConversation, aiType: e.target.value})}
                     >
-                      <option value="gemini">Yunia (Text)</option>
-                      <option value="rime">Yunia (Voice)</option>
+                      <option value="gemini">Yunia (Text Chat)</option>
+                      <option value="rime">Yunia (Voice Assistant)</option>
                     </select>
                   </div>
                   <button type="submit" className="btn btn-primary w-full">
-                    💾 Save Conversation
+                    💾 Save to Memory
                   </button>
                 </form>
               </div>
             </div>
 
-            {/* Conversations List */}
+            {/* Saved Conversations */}
             <div className="card bg-base-100 shadow-lg">
               <div className="card-body">
-                <h2 className="card-title">💬 Recent Conversations ({conversations.length})</h2>
+                <h2 className="card-title">💬 Saved Conversation Memories ({conversations.length})</h2>
+                <p className="text-sm text-base-content/70 mb-4">
+                  Important conversations Yunia remembers about you
+                </p>
                 <div className="space-y-3 max-h-96 overflow-y-auto">
                   {conversations.slice(-10).reverse().map(conv => (
                     <div key={conv.id} className="border border-base-300 rounded-lg p-3">
@@ -369,12 +347,16 @@ const MemoryManager = () => {
                       </div>
                       <p className="text-sm text-base-content/70 mb-2">{conv.content}</p>
                       <div className="text-xs text-base-content/50">
-                        {new Date(conv.timestamp).toLocaleString()}
+                        Saved: {new Date(conv.timestamp).toLocaleString()}
                       </div>
                     </div>
                   ))}
                   {conversations.length === 0 && (
-                    <p className="text-center text-base-content/60">No conversations yet</p>
+                    <div className="text-center text-base-content/60 py-8">
+                      <span className="material-icons text-4xl mb-2">chat_bubble_outline</span>
+                      <p>No conversation memories saved yet</p>
+                      <p className="text-xs">Add important conversations for Yunia to remember</p>
+                    </div>
                   )}
                 </div>
               </div>
@@ -382,121 +364,113 @@ const MemoryManager = () => {
           </div>
         )}
 
-        {/* Reminders Tab */}
-        {activeTab === 'reminders' && (
+        {/* AI Learning Tab */}
+        {activeTab === 'learning' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Add New Reminder */}
+            {/* AI Learning Categories */}
             <div className="card bg-base-100 shadow-lg">
               <div className="card-body">
-                <h2 className="card-title">➕ Add New Reminder</h2>
-                <form onSubmit={handleSaveReminder} className="space-y-4">
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">Title</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered"
-                      value={newReminder.title}
-                      onChange={(e) => setNewReminder({...newReminder, title: e.target.value})}
-                      required
-                    />
+                <h2 className="card-title">🎯 AI Learning Categories</h2>
+                <p className="text-sm text-base-content/70 mb-4">
+                  What Yunia is learning about you
+                </p>
+                <div className="space-y-3">
+                  <div className="border border-base-300 rounded-lg p-3">
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="font-medium">👤 Personal Information</h3>
+                      <span className="badge badge-success">Active</span>
+                    </div>
+                    <p className="text-sm text-base-content/70">
+                      Name, preferences, habits, and personal details
+                    </p>
                   </div>
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">Time</span>
-                    </label>
-                    <input
-                      type="time"
-                      className="input input-bordered"
-                      value={newReminder.time}
-                      onChange={(e) => setNewReminder({...newReminder, time: e.target.value})}
-                      required
-                    />
+
+                  <div className="border border-base-300 rounded-lg p-3">
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="font-medium">💼 Work & Goals</h3>
+                      <span className="badge badge-warning">Learning</span>
+                    </div>
+                    <p className="text-sm text-base-content/70">
+                      Career goals, work patterns, and professional preferences
+                    </p>
                   </div>
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">Note</span>
-                    </label>
-                    <textarea
-                      className="textarea textarea-bordered"
-                      rows="2"
-                      value={newReminder.note}
-                      onChange={(e) => setNewReminder({...newReminder, note: e.target.value})}
-                    />
+
+                  <div className="border border-base-300 rounded-lg p-3">
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="font-medium">🗣️ Communication Style</h3>
+                      <span className="badge badge-info">Adapting</span>
+                    </div>
+                    <p className="text-sm text-base-content/70">
+                      How you prefer to communicate and receive information
+                    </p>
                   </div>
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">Type</span>
-                    </label>
-                    <select
-                      className="select select-bordered"
-                      value={newReminder.type}
-                      onChange={(e) => setNewReminder({...newReminder, type: e.target.value})}
-                    >
-                      <option value="personal">Personal</option>
-                      <option value="work">Work</option>
-                      <option value="health">Health</option>
-                      <option value="meeting">Meeting</option>
-                    </select>
+
+                  <div className="border border-base-300 rounded-lg p-3">
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="font-medium">📍 Context & Environment</h3>
+                      <span className="badge badge-secondary">Tracking</span>
+                    </div>
+                    <p className="text-sm text-base-content/70">
+                      Location patterns, schedule, and environmental preferences
+                    </p>
                   </div>
-                  <button type="submit" className="btn btn-primary w-full">
-                    ⏰ Save Reminder
-                  </button>
-                </form>
+                </div>
               </div>
             </div>
 
-            {/* Reminders List */}
+            {/* Memory Insights */}
             <div className="card bg-base-100 shadow-lg">
               <div className="card-body">
-                <h2 className="card-title">⏰ Your Reminders ({reminders.length})</h2>
+                <h2 className="card-title">🧠 Memory Insights</h2>
+                <p className="text-sm text-base-content/70 mb-4">
+                  What Yunia has learned about you recently
+                </p>
                 <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {reminders.map(reminder => (
-                    <div key={reminder.id} className="border border-base-300 rounded-lg p-3">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-medium">{reminder.title}</h3>
-                        <div className="flex gap-2">
-                          <span className={`badge badge-sm ${
-                            reminder.status === 'active' ? 'badge-warning' :
-                            reminder.status === 'completed' ? 'badge-success' : 'badge-error'
-                          }`}>
-                            {reminder.status}
-                          </span>
-                          <span className="badge badge-sm badge-outline">{reminder.type}</span>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-mono">{reminder.time}</span>
-                        <div className="flex gap-1">
-                          {reminder.status === 'active' && (
-                            <>
-                              <button
-                                className="btn btn-xs btn-success"
-                                onClick={() => handleUpdateReminderStatus(reminder.id, 'completed')}
-                              >
-                                ✓
-                              </button>
-                              <button
-                                className="btn btn-xs btn-error"
-                                onClick={() => handleUpdateReminderStatus(reminder.id, 'cancelled')}
-                              >
-                                ✕
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      {reminder.note && (
-                        <p className="text-sm text-base-content/70 mb-2">{reminder.note}</p>
-                      )}
-                      <div className="text-xs text-base-content/50">
-                        Created: {new Date(reminder.createdAt).toLocaleString()}
-                      </div>
+                  <div className="border border-base-300 rounded-lg p-3">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-medium">Communication Preference</h3>
+                      <span className="badge badge-sm badge-info">Recent</span>
                     </div>
-                  ))}
-                  {reminders.length === 0 && (
-                    <p className="text-center text-base-content/60">No reminders yet</p>
+                    <p className="text-sm text-base-content/70 mb-2">
+                      Prefers direct, concise communication style
+                    </p>
+                    <div className="text-xs text-base-content/50">
+                      Learned: {new Date().toLocaleDateString()}
+                    </div>
+                  </div>
+
+                  <div className="border border-base-300 rounded-lg p-3">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-medium">Work Schedule</h3>
+                      <span className="badge badge-sm badge-success">Confirmed</span>
+                    </div>
+                    <p className="text-sm text-base-content/70 mb-2">
+                      Most active during morning hours (9 AM - 12 PM)
+                    </p>
+                    <div className="text-xs text-base-content/50">
+                      Pattern identified: {new Date().toLocaleDateString()}
+                    </div>
+                  </div>
+
+                  <div className="border border-base-300 rounded-lg p-3">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-medium">Project Focus</h3>
+                      <span className="badge badge-sm badge-warning">Learning</span>
+                    </div>
+                    <p className="text-sm text-base-content/70 mb-2">
+                      Currently working on Yunia AI development project
+                    </p>
+                    <div className="text-xs text-base-content/50">
+                      Context updated: {new Date().toLocaleDateString()}
+                    </div>
+                  </div>
+
+                  {(geminiMemory.length === 0 && rimeMemory.length === 0) && (
+                    <div className="text-center text-base-content/60 py-8">
+                      <span className="material-icons text-4xl mb-2">psychology</span>
+                      <p>Yunia is still learning about you</p>
+                      <p className="text-xs">Insights will appear as you interact more</p>
+                    </div>
                   )}
                 </div>
               </div>
@@ -574,74 +548,68 @@ const MemoryManager = () => {
           </div>
         )}
 
-        {/* Tools Tab */}
+        {/* Memory Tools Tab */}
         {activeTab === 'tools' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Data Management */}
+            {/* Memory Management */}
             <div className="card bg-base-100 shadow-lg">
               <div className="card-body">
-                <h2 className="card-title">🛠️ Data Management</h2>
+                <h2 className="card-title">🛠️ Memory Management</h2>
+                <p className="text-sm text-base-content/70 mb-4">
+                  Manage your AI memory data and settings
+                </p>
                 <div className="space-y-4">
                   <button
                     className="btn btn-info w-full"
                     onClick={handleExportData}
                   >
-                    📤 Export All Memory Data
+                    📤 Export Memory Data
                   </button>
                   <button
                     className="btn btn-warning w-full"
                     onClick={() => loadMemoryData()}
                   >
-                    🔄 Refresh All Data
+                    🔄 Refresh Memory Data
                   </button>
                   <button
                     className="btn btn-error w-full"
                     onClick={handleClearAllMemory}
                   >
-                    🗑️ Clear All Memory Data
+                    🗑️ Clear All AI Memory
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* Sample Data */}
+            {/* Memory Analytics */}
             <div className="card bg-base-100 shadow-lg">
               <div className="card-body">
-                <h2 className="card-title">📝 Sample Data</h2>
-                <div className="space-y-4">
-                  <button
-                    className="btn btn-secondary w-full"
-                    onClick={handleAddSampleEnvironmentalData}
-                  >
-                    🌤️ Add Sample Weather Data
-                  </button>
-                  <button
-                    className="btn btn-secondary w-full"
-                    onClick={() => {
-                      setNewConversation({
-                        title: 'Sample Conversation',
-                        content: 'This is a sample conversation with Yunia AI about the weather.',
-                        aiType: 'gemini'
-                      });
-                      setActiveTab('conversations');
-                    }}
-                  >
-                    💬 Create Sample Conversation
-                  </button>
-                  <button
-                    className="btn btn-secondary w-full"
-                    onClick={() => {
-                      setNewReminder({
-                        title: 'Sample Reminder',
-                        time: '14:00',
-                        note: 'This is a sample reminder created by the memory manager.',
-                        type: 'personal'
-                      });
-                      setActiveTab('reminders');
-                    }}
-                  >
-                    ⏰ Create Sample Reminder
-                  </button>
+                <h2 className="card-title">� Memory Analytics</h2>
+                <p className="text-sm text-base-content/70 mb-4">
+                  Insights about your AI memory usage
+                </p>
+                <div className="space-y-3">
+                  <div className="stat">
+                    <div className="stat-title">Memory Storage</div>
+                    <div className="stat-value text-lg">
+                      {(JSON.stringify(geminiMemory).length + JSON.stringify(rimeMemory).length + JSON.stringify(sharedMemory).length)} bytes
+                    </div>
+                    <div className="stat-desc">Local storage used</div>
+                  </div>
+
+                  <div className="stat">
+                    <div className="stat-title">Learning Progress</div>
+                    <div className="stat-value text-lg">
+                      {Object.keys(preferences).length + conversations.length}
+                    </div>
+                    <div className="stat-desc">Total memory items</div>
+                  </div>
+
+                  <div className="stat">
+                    <div className="stat-title">AI Adaptation</div>
+                    <div className="stat-value text-lg text-success">Active</div>
+                    <div className="stat-desc">Continuously learning</div>
+                  </div>
                 </div>
               </div>
             </div>

@@ -2,8 +2,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-import MemoryExamplesPage from "./pages/MemoryExamplesPage";
-import TestMemory from "./pages/TestMemory";
 import MemoryManager from "./pages/MemoryManager";
 import HabitTracker from "./pages/HabitTracker";
 import DailyBriefings from "./pages/DailyBriefings";
@@ -166,22 +164,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/memory-test"
-          element={
-            <ProtectedRoute requiredRole="user">
-              <TestMemory />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/memory-examples"
-          element={
-            <ProtectedRoute requiredRole="user">
-              <MemoryExamplesPage />
-            </ProtectedRoute>
-          }
-        />
+
 
         <Route
           path="/schedule"
