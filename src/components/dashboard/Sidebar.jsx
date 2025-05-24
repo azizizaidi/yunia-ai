@@ -4,24 +4,37 @@ import { logoutUser, getCurrentUser } from "../../services/api";
 
 const menu = [
   {
-    category: "MAIN",
+    category: "Main",
     items: [
-      { label: "Chat", to: "/dashboard", icon: "chat" },
-      { label: "Voice Chat", to: "/voice-chat", icon: "mic" },
+      { label: "AI Chat", to: "/dashboard", icon: "chat" },
+      { label: "Chat History", to: "/chat-history", icon: "history" },
+    ],
+  },
+  {
+    category: "Tools",
+    items: [
+      { label: "Habit Tracker", to: "/habits", icon: "track_changes" },
+      { label: "Daily Briefings", to: "/briefings", icon: "article" },
+      { label: "Reminders", to: "/reminders", icon: "notifications" },
+      { label: "Task Manager", to: "/tasks", icon: "task_alt" },
+      { label: "Schedule", to: "/schedule", icon: "schedule" },
+      { label: "Memory", to: "/memory", icon: "psychology" },
+    ],
+  },
+  {
+    category: "Data",
+    items: [
+      { label: "Calendar", to: "/calendar", icon: "calendar_today" },
+      { label: "Weather", to: "/weather", icon: "cloud" },
+      { label: "Location", to: "/location", icon: "location_on" },
       { label: "Analytics", to: "/analytics", icon: "analytics" },
     ],
   },
   {
-    category: "PERSONAL",
+    category: "Settings",
     items: [
       { label: "Profile", to: "/profile", icon: "person" },
-      { label: "Saved Chats", to: "/saved-chats", icon: "bookmark" },
-      { label: "History", to: "/history", icon: "history" },
-    ],
-  },
-  {
-    category: "SYSTEM",
-    items: [
+      { label: "Subscription", to: "/subscription", icon: "star" },
       { label: "Settings", to: "/settings", icon: "settings" },
       { label: "Help", to: "/help", icon: "help" },
     ],
@@ -64,122 +77,124 @@ export default function Sidebar({ onToggle }) {
   return (
     <aside
       className={`fixed top-0 left-0 h-screen ${
-        collapsed ? "w-20" : "w-64"
-      } bg-base-200 z-40 transition-all duration-300 overflow-x-hidden`}
+        collapsed ? "w-16" : "w-64"
+      } bg-white border-r border-gray-200 z-40 transition-all duration-300`}
     >
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-base-300">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200">
           {!collapsed ? (
-            <div className="flex items-center overflow-hidden">
-              <div className="avatar">
-                <div className="w-10 rounded-full bg-primary text-primary-content flex items-center justify-center">
-                  <span className="material-icons">psychology</span>
-                </div>
+            <div className="flex items-center">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <span className="material-icons text-white text-lg">psychology</span>
               </div>
-              <div className="ml-3 truncate">
-                <div className="font-bold">Yunia AI</div>
-                <div className="text-xs opacity-70">Smart Assistant</div>
+              <div className="ml-3">
+                <div className="font-semibold text-gray-900">Yunia AI</div>
+                <div className="text-xs text-gray-500">Personal Assistant</div>
               </div>
             </div>
           ) : (
-            <div className="avatar mx-auto">
-              <div className="w-10 rounded-full bg-primary text-primary-content flex items-center justify-center">
-                <span className="material-icons">psychology</span>
-              </div>
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mx-auto">
+              <span className="material-icons text-white text-lg">psychology</span>
             </div>
           )}
 
-          <div
-            className="tooltip tooltip-left z-[500]"
-            data-tip={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          <button
+            onClick={toggleSidebar}
+            className="p-1 rounded hover:bg-gray-100"
           >
-            <button
-              onClick={toggleSidebar}
-              className="btn btn-sm btn-circle btn-ghost"
-              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            >
-              <span className="material-icons">
-                {collapsed ? "chevron_right" : "chevron_left"}
-              </span>
-            </button>
-          </div>
+            <span className="material-icons text-gray-500">
+              {collapsed ? "chevron_right" : "chevron_left"}
+            </span>
+          </button>
         </div>
 
         {/* Menu Items */}
-        <ul className="menu menu-md flex-1 overflow-y-auto px-1">
+        <div className="flex-1 overflow-y-auto py-2">
           {menu.map((section, index) => (
-            <li key={section.category} className={index > 0 ? "mt-4" : "mt-2"}>
+            <div key={section.category} className="mb-4">
               {!collapsed && (
-                <div className="menu-title text-xs opacity-60 px-4 mt-2">
-                  {section.category}
+                <div className="px-4 py-2">
+                  <h3 className="text-xs font-medium text-gray-500 uppercase">
+                    {section.category}
+                  </h3>
                 </div>
               )}
-              <ul className="menu-sub p-0">
+
+              <div className="px-2">
                 {section.items.map((item) => (
-                  <li
+                  <Link
                     key={item.label}
-                    className={`w-full ${activeItem === item.to ? "relative" : ""}`}
-                  >
-                    {activeItem === item.to && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary-focus rounded-r-md"></span>
-                    )}
-                    <Link
-                      to={item.to}
-                      className={`${
+                    to={item.to}
+                    className={`
+                      flex items-center w-full px-3 py-2 mb-1 rounded-lg transition-colors
+                      ${collapsed ? "justify-center" : ""}
+                      ${
                         activeItem === item.to
-                          ? "active bg-primary text-primary-content font-medium"
-                          : ""
-                      } w-full hover:bg-base-300`}
-                    >
-                      {collapsed ? (
-                        <div className="tooltip tooltip-right z-[500]" data-tip={item.label}>
-                          <span className="material-icons flex items-center justify-center">
-                            {item.icon}
-                          </span>
-                        </div>
-                      ) : (
-                        <>
-                          <span className="material-icons">{item.icon}</span>
-                          <span className="truncate">{item.label}</span>
-                        </>
-                      )}
-                    </Link>
-                  </li>
+                          ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }
+                    `}
+                  >
+                    {collapsed ? (
+                      <div className="tooltip tooltip-right" data-tip={item.label}>
+                        <span className="material-icons text-lg">
+                          {item.icon}
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <span className="material-icons text-lg mr-3">
+                          {item.icon}
+                        </span>
+                        <span className="text-sm font-medium">
+                          {item.label}
+                        </span>
+                      </>
+                    )}
+                  </Link>
                 ))}
-              </ul>
-            </li>
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
 
         {/* User + Logout */}
-        <div className="border-t border-base-300 p-4">
+        <div className="border-t border-gray-200 p-4">
           {!collapsed && user && (
-            <div className="flex items-center mb-3 overflow-hidden">
-              <div className="avatar">
-                <div className="w-10 rounded-full">
-                  <img src="https://i.pravatar.cc/40" alt={user.name || "User"} />
-                </div>
+            <div className="flex items-center mb-3">
+              <div className="w-8 h-8 rounded-full overflow-hidden">
+                <img src="https://i.pravatar.cc/32" alt={user.name || "User"} />
               </div>
-              <div className="ml-3 overflow-hidden max-w-[calc(100%-3rem)]">
-                <div className="font-medium truncate">{user.name || "User"}</div>
-                <div className="text-xs opacity-70 truncate">{user.email}</div>
+              <div className="ml-3 flex-1">
+                <div className="text-sm font-medium text-gray-900 truncate">{user.name || "User"}</div>
+                <div className="text-xs text-gray-500 truncate">{user.email}</div>
               </div>
             </div>
           )}
 
           {collapsed ? (
-            <div className="tooltip tooltip-right z-[500]" data-tip="Logout">
-              <button
-                onClick={showLogoutModal}
-                className="btn btn-error btn-sm btn-circle mx-auto flex items-center justify-center"
-              >
-                <span className="material-icons">logout</span>
-              </button>
+            <div className="flex flex-col items-center space-y-2">
+              {user && (
+                <div className="w-8 h-8 rounded-full overflow-hidden">
+                  <img src="https://i.pravatar.cc/32" alt={user.name || "User"} />
+                </div>
+              )}
+              <div className="tooltip tooltip-right" data-tip="Logout">
+                <button
+                  onClick={showLogoutModal}
+                  className="p-1 rounded hover:bg-red-50 text-red-600"
+                >
+                  <span className="material-icons text-lg">logout</span>
+                </button>
+              </div>
             </div>
           ) : (
-            <button onClick={showLogoutModal} className="btn btn-error btn-sm w-full">
-              <span className="material-icons">logout</span>
+            <button
+              onClick={showLogoutModal}
+              className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"
+            >
+              <span className="material-icons text-lg mr-3">logout</span>
               <span>Logout</span>
             </button>
           )}
