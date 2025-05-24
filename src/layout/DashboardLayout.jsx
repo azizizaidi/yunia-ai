@@ -18,7 +18,7 @@ export default function DashboardLayout({ children }) {
       {/* Main Content */}
       <div
         className={`transition-all duration-300 ${
-          sidebarCollapsed ? "ml-20" : "ml-64"
+          sidebarCollapsed ? "ml-16" : "ml-64"
         }`}
       >
         <div className="flex flex-col min-h-screen">
