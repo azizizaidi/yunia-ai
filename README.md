@@ -1,4 +1,4 @@
-# Yunia AI – Smart Personal Assistant Dashboard (Frontend)
+# Yunia AI – Personal Assistant Dashboard
 
 <div align="center">
 
@@ -8,10 +8,10 @@
   <h3>✨ "Hi, I'm Yunia — your personal AI assistant." ✨</h3>
 
   <div align="center">
-    <img alt="React" src="https://img.shields.io/badge/React-18.0-blue?style=for-the-badge&logo=react&logoColor=white" />
-    <img alt="Vite" src="https://img.shields.io/badge/Vite-Build-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
-    <img alt="Tailwind" src="https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" />
-    <img alt="License" src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" />
+    <img alt="React" src="https://img.shields.io/badge/React-18.3-blue?style=for-the-badge&logo=react&logoColor=white" />
+    <img alt="Vite" src="https://img.shields.io/badge/Vite-6.3-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
+    <img alt="Tailwind" src="https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" />
+    <img alt="DaisyUI" src="https://img.shields.io/badge/DaisyUI-5.0-5A67D8?style=for-the-badge&logo=daisyui&logoColor=white" />
   </div>
 
   <br />
@@ -19,142 +19,159 @@
   <a href="#-overview">Overview</a> •
   <a href="#-features">Features</a> •
   <a href="#-tech-stack">Tech Stack</a> •
-  <a href="#-folder-structure">Structure</a> •
-  <a href="#-development-timeline">Timeline</a>
+  <a href="#-setup">Setup</a> •
+  <a href="#-documentation">Documentation</a>
 </div>
 
 <br />
 
 ---
 
-<div align="center">
-  <h2>🎯 Overview</h2>
-  <img src="https://github.com/user-attachments/assets/placeholder-dashboard" alt="Yunia AI Dashboard Preview" width="800" />
-</div>
+## 🎯 Project Overview
 
-**Yunia AI** is a smart, contextual assistant web app designed to help users manage their daily habits, routines, environment, and productivity — powered by voice interaction, live data integration, and modular design.
+**Domain: Personal AI Assistant SaaS Platform**
 
-- 🎯 Manage tasks, habits, and reminders
-- 🌤️ Get context-aware insights (weather, traffic, time, location)
-- 🎤 Use voice input/output
-- 📅 Integrate Google Calendar
-- 🤖 View AI-generated briefings
-- 📱 Modular structure and SaaS-ready plan display
+I built Yunia AI as my frontend bootcamp project - it's basically a personal assistant dashboard where users can chat with AI, track their habits, manage subscriptions, and organize their daily stuff. Think of it like having your own digital assistant that remembers your conversations and helps you stay productive.
 
-Built as part of a **14-day bootcamp frontend project**, this system is the foundation for a full-stack AI SaaS assistant.
+The whole idea came from wanting to create something that feels like a real SaaS product you'd actually pay for, not just another todo app. So I added proper user authentication, subscription plans with Stripe, and even admin features.
+
+**What makes this different:**
+- Actually works with real AI (Google Gemini API)
+- Has voice chat - you can literally talk to it
+- Remembers your conversations and learns from them
+- Proper subscription system with usage limits
+- Clean, responsive design that doesn't look like a student project
+- Role-based access (regular users vs admins)
+
+This was built for the **Adnexio Full-Stack Bootcamp** as my frontend capstone project. I wanted to show I could build something commercial-grade, not just follow tutorials.
 
 ---
 
-## ✨ Features
+## ✨ What I Built
 
-<div align="center">
-  <table>
-    <tr>
-      <td align="center">
-        <img src="https://img.icons8.com/fluency/96/000000/login-rounded-right.png" width="60" />
-        <br /><strong>Auth System</strong>
-        <br />Login & Register
-      </td>
-      <td align="center">
-        <img src="https://img.icons8.com/fluency/96/000000/chat.png" width="60" />
-        <br /><strong>AI Chat</strong>
-        <br />Text + Voice Interface
-      </td>
-      <td align="center">
-        <img src="https://img.icons8.com/external-flaticons-lineal-color-flat-icons/64/external-habit-lifestyles-flaticons-lineal-color-flat-icons-2.png" width="60" />
-        <br /><strong>Habit Tracker</strong>
-        <br />Track & Manage Habits
-      </td>
-    </tr>
-    <tr>
-      <td align="center">
-        <img src="https://img.icons8.com/fluency/96/000000/bell.png" width="60" />
-        <br /><strong>Notifications</strong>
-        <br />Smart Reminders
-      </td>
-      <td align="center">
-        <img src="https://img.icons8.com/fluency/96/000000/partly-cloudy-day.png" width="60" />
-        <br /><strong>Live Data</strong>
-        <br />Weather, Traffic, Location
-      </td>
-      <td align="center">
-        <img src="https://img.icons8.com/fluency/96/000000/google-calendar.png" width="60" />
-        <br /><strong>Calendar</strong>
-        <br />Google Integration
-      </td>
-    </tr>
-    <tr>
-      <td align="center">
-        <img src="https://img.icons8.com/fluency/96/000000/robot.png" width="60" />
-        <br /><strong>Autopilot</strong>
-        <br />AI Briefings
-      </td>
-      <td align="center">
-        <img src="https://img.icons8.com/fluency/96/000000/subscription.png" width="60" />
-        <br /><strong>SaaS Plans</strong>
-        <br />Free / Pro / Business
-      </td>
-      <td align="center">
-        <img src="https://img.icons8.com/officel/80/media-queries.png" width="60" />
-        <br /><strong>Responsive</strong>
-        <br />Desktop & Mobile
-      </td>
-    </tr>
-  </table>
-</div>
+### Core Features That Actually Work
+
+**🤖 AI Chat Interface**
+- Real conversations with Google Gemini AI
+- Voice input/output using Web Speech API
+- Conversation history that persists
+- Smart memory management with duplicate detection
+
+**👤 User Authentication & Roles**
+- Separate login for users and admins
+- Protected routes based on user roles
+- Profile management with avatar uploads
+- Secure logout with confirmation
+
+**💳 Subscription System**
+- Three tiers: Free, Pro, Business
+- Real Stripe integration (test mode)
+- Usage monitoring and limits
+- Subscription cancellation handling
+
+**📊 Memory & Analytics**
+- Conversation categorization and filtering
+- Polar charts showing AI learning data
+- Smart duplicate conversation cleanup
+- Data retention management
+
+**🎯 Productivity Tools**
+- Habit tracking system
+- Reminder management
+- Daily briefings
+- Task organization
+
+**📱 User Experience**
+- Fully responsive design (mobile + desktop)
+- Collapsible sidebar with tooltips
+- DaisyUI components for consistency
+- Loading states and error handling
 
 ---
 
 ## 🛠 Tech Stack
 
-<div align="center">
-  <table>
-    <tbody>
-      <tr>
-        <td align="center" width="120">
-          <img src="https://img.icons8.com/color/96/000000/react-native.png" width="40" />
-          <br /><strong>React 18</strong>
-        </td>
-        <td align="center" width="120">
-          <img src="https://img.icons8.com/color/96/000000/vite.png" width="40" />
-          <br /><strong>Vite</strong>
-        </td>
-        <td align="center" width="120">
-          <img src="https://img.icons8.com/color/96/000000/tailwind_css.png" width="40" />
-          <br /><strong>Tailwind</strong>
-        </td>
-        <td align="center" width="120">
-          <img src="https://img.icons8.com/color/96/000000/javascript--v1.png" width="40" />
-          <br /><strong>JavaScript</strong>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+**Frontend Framework**
+- React 18.3 with functional components and hooks
+- Vite 6.3 for fast development and building
+- React Router DOM for navigation
 
-<details>
-<summary><strong>📚 Complete Tech Stack</strong></summary>
+**Styling & UI**
+- Tailwind CSS 3.4 for utility-first styling
+- DaisyUI 5.0 for pre-built components
+- Responsive design for mobile and desktop
 
-| Layer        | Tools / Libraries                      |
-|--------------|-----------------------------------------|
-| Frontend     | React 18, Vite, Tailwind CSS            |
-| Routing      | React Router DOM                        |
-| State        | React Hooks (`useState`, `useEffect`)   |
-| API Client   | Axios / Fetch                           |
-| Voice Input  | Web Speech API                          |
-| Voice Output | SpeechSynthesis API (TTS)               |
-| Weather      | OpenWeather API                         |
-| Location     | Geolocation API                         |
-| Traffic      | Google Maps Directions API              |
-| Calendar     | Google Calendar API                     |
-| AI Services  | Gemini API (Google)                     |
-| Deployment   | Vercel                                   |
+**APIs & Integrations**
+- Google Gemini AI for chat functionality
+- Stripe for payment processing
+- Web Speech API for voice input/output
+- Fetch API for data handling
 
-</details>
+**State Management**
+- React hooks (useState, useEffect, useContext)
+- Local storage for data persistence
+- Custom hooks for reusable logic
+
+**Development Tools**
+- ESLint for code quality
+- PostCSS for CSS processing
+- Chart.js for data visualization
+
+**Data Storage**
+- JSON files for mock API data
+- Local storage for user preferences
+- Session storage for temporary data
 
 ---
 
-## 📁 Folder Structure
+## � Getting Started
+
+### Prerequisites
+- Node.js 18+ installed
+- Git for cloning the repository
+- A modern web browser
+
+### Installation
+
+1. **Clone the repository**
+```bash
+git clone https://github.com/azizizaidi/yunia-ai.git
+cd yunia-ai
+```
+
+2. **Install dependencies**
+```bash
+npm install
+```
+
+3. **Set up environment variables** (optional)
+```bash
+# Create .env file for API keys (if you want real AI functionality)
+VITE_GEMINI_API_KEY=your_gemini_api_key_here
+VITE_STRIPE_PUBLISHABLE_KEY=your_stripe_key_here
+```
+
+4. **Start the development server**
+```bash
+npm run dev
+```
+
+5. **Open your browser**
+Navigate to `http://localhost:5173`
+
+### Test Accounts
+- **User**: email: `ina@gmail.com`, password: `ina123`
+- **Admin**: email: `azizizaidi5@gmail.com`, password: `admin123`
+
+### Building for Production
+```bash
+npm run build
+npm run preview
+```
+
+---
+
+## 📁 Project Structure
 
 <div align="center">
   <img src="https://img.icons8.com/color/96/000000/folder-tree.png" width="80" />
