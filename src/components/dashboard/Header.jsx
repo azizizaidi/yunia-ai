@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
-import { getNotifications } from "../../services/api";
+import { getNotifications, getCurrentUser, getUserProfile } from "../../services/api";
 
 export default function Header() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -18,6 +20,35 @@ export default function Header() {
     };
 
     fetchNotifications();
+  }, []);
+
+  // Fetch user data
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const currentUser = getCurrentUser();
+        const profile = await getUserProfile();
+        setUser(currentUser);
+        setUserProfile(profile);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  // Listen for profile updates
+  useEffect(() => {
+    const handleProfileUpdate = (event) => {
+      setUserProfile(event.detail.profile);
+      setUser(event.detail.user);
+    };
+
+    window.addEventListener('userProfileUpdated', handleProfileUpdate);
+    return () => {
+      window.removeEventListener('userProfileUpdated', handleProfileUpdate);
+    };
   }, []);
 
   // Function to get the appropriate icon based on notification type
@@ -119,7 +150,11 @@ export default function Header() {
         <div className="dropdown dropdown-end">
           <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
             <div className="w-10 rounded-full">
-              <img src="https://i.pravatar.cc/40" alt="user" />
+              <img
+                src={user?.avatar || userProfile?.avatar || "https://i.pravatar.cc/40"}
+                alt={user?.name || "user"}
+                className="w-full h-full object-cover rounded-full"
+              />
             </div>
           </div>
           <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">

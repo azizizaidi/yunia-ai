@@ -78,6 +78,20 @@ export default function Sidebar({ onToggle }) {
     }
   }, [user]);
 
+  // Listen for profile updates
+  useEffect(() => {
+    const handleProfileUpdate = (event) => {
+      // Update user profile when it changes
+      setUserProfile(event.detail.profile);
+      setUser(event.detail.user);
+    };
+
+    window.addEventListener('userProfileUpdated', handleProfileUpdate);
+    return () => {
+      window.removeEventListener('userProfileUpdated', handleProfileUpdate);
+    };
+  }, []);
+
   const handleLogout = () => {
     logoutUser();
     const timestamp = new Date().getTime();
@@ -186,8 +200,9 @@ export default function Sidebar({ onToggle }) {
             <div className="flex items-center mb-3">
               <div className="w-8 h-8 rounded-full overflow-hidden">
                 <img
-                  src={userProfile?.avatar || `https://i.pravatar.cc/32?u=${user.email}`}
+                  src={user.avatar || userProfile?.avatar || `https://i.pravatar.cc/32?u=${user.email}`}
                   alt={user.name || "User"}
+                  className="w-full h-full object-cover"
                 />
               </div>
               <div className="ml-3 flex-1">
@@ -202,8 +217,9 @@ export default function Sidebar({ onToggle }) {
               {user && (
                 <div className="w-8 h-8 rounded-full overflow-hidden">
                   <img
-                    src={userProfile?.avatar || `https://i.pravatar.cc/32?u=${user.email}`}
+                    src={user.avatar || userProfile?.avatar || `https://i.pravatar.cc/32?u=${user.email}`}
                     alt={user.name || "User"}
+                    className="w-full h-full object-cover"
                   />
                 </div>
               )}
