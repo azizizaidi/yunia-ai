@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
  * @param {Function} props.onSubmit - Optional callback to automatically submit after voice input
  * @returns {JSX.Element} Voice input component
  */
-const VoiceInput = ({ onTranscript, onSubmit }) => {
+const VoiceInput = ({ onTranscript, onSubmit, isMobile }) => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [recognition, setRecognition] = useState(null);
@@ -84,10 +84,10 @@ const VoiceInput = ({ onTranscript, onSubmit }) => {
     return (
       <div className="tooltip tooltip-left" data-tip="Voice input not supported in this browser">
         <button
-          className="btn btn-circle btn-sm btn-disabled"
+          className={`btn btn-circle btn-disabled ${isMobile ? 'btn-xs' : 'btn-sm'}`}
           disabled
         >
-          <span className="material-icons">mic_off</span>
+          <span className={`material-icons ${isMobile ? 'text-xs' : ''}`}>mic_off</span>
         </button>
       </div>
     );
@@ -96,17 +96,21 @@ const VoiceInput = ({ onTranscript, onSubmit }) => {
   return (
     <div className="relative">
       {isListening && transcript && (
-        <div className="absolute bottom-full mb-2 right-0 bg-base-200 p-2 rounded-lg text-sm max-w-xs">
+        <div className={`absolute bottom-full mb-2 right-0 bg-base-200 p-2 rounded-lg text-sm ${
+          isMobile ? 'max-w-48' : 'max-w-xs'
+        }`}>
           {transcript}
         </div>
       )}
       <button
         type="button"
         onClick={toggleListening}
-        className={`btn btn-circle btn-sm ${isListening ? 'btn-error animate-pulse' : 'btn-outline'}`}
+        className={`btn btn-circle ${isMobile ? 'btn-xs' : 'btn-sm'} ${
+          isListening ? 'btn-error animate-pulse' : 'btn-outline'
+        }`}
         aria-label={isListening ? "Stop listening" : "Start voice input"}
       >
-        <span className="material-icons">
+        <span className={`material-icons ${isMobile ? 'text-xs' : ''}`}>
           {isListening ? 'mic' : 'mic_none'}
         </span>
       </button>

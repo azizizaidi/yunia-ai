@@ -257,7 +257,7 @@ const MemoryManager = () => {
 
   return (
     <DashboardLayout>
-      <div className="p-6">
+      <div className="p-2 sm:p-4 lg:p-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-3 text-gray-800">Memory Manager</h1>
           <p className="text-gray-600 text-base leading-relaxed">
@@ -280,7 +280,7 @@ const MemoryManager = () => {
 
         {/* Tab Navigation */}
         <div className="border-b border-gray-200 mb-8">
-          <nav className="flex space-x-8">
+          <nav className="flex flex-wrap space-x-4 lg:space-x-8 overflow-x-auto">
             {[
               { id: 'overview', label: 'Overview', icon: 'dashboard' },
               { id: 'conversations', label: 'Conversations', icon: 'chat' },
@@ -307,7 +307,7 @@ const MemoryManager = () => {
         {/* Tab Content */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
               {/* Memory Statistics */}
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Memory Statistics</h3>
@@ -474,7 +474,7 @@ const MemoryManager = () => {
                 )}
 
                 {/* Enhanced Statistics */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                   <div className="stat bg-base-200 rounded-lg">
                     <div className="stat-title">Total Conversations</div>
                     <div className="stat-value text-lg">{conversationStats.total || 0}</div>

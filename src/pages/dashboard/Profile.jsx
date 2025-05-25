@@ -58,7 +58,7 @@ const ProfilePage = () => {
 
   return (
     <DashboardLayout>
-      <div className="p-6 max-w-4xl mx-auto">
+      <div className="p-2 sm:p-4 lg:p-6 max-w-4xl mx-auto">
         {/* Header */}
         <ProfileHeader />
 

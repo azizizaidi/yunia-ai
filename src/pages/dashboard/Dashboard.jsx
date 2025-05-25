@@ -41,9 +41,9 @@ const DashboardPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="p-2 max-w-7xl mx-auto">
+      <div className="w-full max-w-7xl mx-auto">
         {/* Usage Monitor - Shows subscription warnings */}
-        <UsageMonitor className="mb-4" />
+        <UsageMonitor className="mb-3 sm:mb-4" />
 
         {/* Chat and Voice Interface */}
         <ChatDashboard />

@@ -41,7 +41,7 @@ const menu = [
   },
 ];
 
-export default function Sidebar({ onToggle }) {
+export default function Sidebar({ onToggle, mobileMenuOpen, onMobileMenuClose, isMobile }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
@@ -109,23 +109,38 @@ export default function Sidebar({ onToggle }) {
     if (onToggle) onToggle(nextState);
   };
 
+  // Handle mobile menu item click
+  const handleMobileMenuItemClick = () => {
+    if (isMobile && onMobileMenuClose) {
+      onMobileMenuClose();
+    }
+  };
+
   return (
     <aside
-      className={`fixed top-0 left-0 h-screen ${
-        collapsed ? "w-16" : "w-64"
-      } bg-white border-r border-gray-200 z-40 transition-all duration-300`}
+      className={`fixed top-0 left-0 h-screen bg-white border-r border-gray-200 z-40 transition-all duration-300 ease-in-out
+        ${isMobile
+          ? mobileMenuOpen
+            ? "w-64 translate-x-0"
+            : "w-64 -translate-x-full"
+          : collapsed
+            ? "w-16"
+            : "w-64 translate-x-0"
+        }
+      `}
     >
       <div className="flex flex-col h-full">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          {!collapsed ? (
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          {/* Always show full logo on mobile, respect collapsed state on desktop */}
+          {isMobile || !collapsed ? (
+            <div className="flex items-center min-w-0">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <span className="material-icons text-white text-lg">psychology</span>
               </div>
-              <div className="ml-3">
-                <div className="font-semibold text-gray-900">Yunia AI</div>
-                <div className="text-xs text-gray-500">Personal Assistant</div>
+              <div className="ml-3 min-w-0">
+                <div className="font-semibold text-gray-900 truncate">Yunia AI</div>
+                <div className="text-xs text-gray-500 truncate">Personal Assistant</div>
               </div>
             </div>
           ) : (
@@ -134,23 +149,28 @@ export default function Sidebar({ onToggle }) {
             </div>
           )}
 
-          <button
-            onClick={toggleSidebar}
-            className="p-1 rounded hover:bg-gray-100"
-          >
-            <span className="material-icons text-gray-500">
-              {collapsed ? "chevron_right" : "chevron_left"}
-            </span>
-          </button>
+          {/* Toggle button - hide on mobile */}
+          {!isMobile && (
+            <button
+              onClick={toggleSidebar}
+              className="p-1 rounded-lg hover:bg-gray-100 transition-colors flex-shrink-0"
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <span className="material-icons text-gray-600 text-lg">
+                {collapsed ? "chevron_right" : "chevron_left"}
+              </span>
+            </button>
+          )}
         </div>
 
         {/* Menu Items */}
         <div className="flex-1 overflow-y-auto py-2">
           {menu.map((section, index) => (
             <div key={section.category} className="mb-4">
-              {!collapsed && (
+              {/* Always show section headers on mobile, respect collapsed state on desktop */}
+              {(isMobile || !collapsed) && (
                 <div className="px-4 py-2">
-                  <h3 className="text-xs font-medium text-gray-500 uppercase">
+                  <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">
                     {section.category}
                   </h3>
                 </div>
@@ -161,9 +181,10 @@ export default function Sidebar({ onToggle }) {
                   <Link
                     key={item.label}
                     to={item.to}
+                    onClick={handleMobileMenuItemClick}
                     className={`
-                      flex items-center w-full px-3 py-2 mb-1 rounded-lg transition-colors
-                      ${collapsed ? "justify-center" : ""}
+                      flex items-center w-full px-3 py-2 mb-1 rounded-lg transition-all duration-200
+                      ${collapsed && !isMobile ? "justify-center" : ""}
                       ${
                         activeItem === item.to
                           ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600"
@@ -171,7 +192,7 @@ export default function Sidebar({ onToggle }) {
                       }
                     `}
                   >
-                    {collapsed ? (
+                    {collapsed && !isMobile ? (
                       <div className="tooltip tooltip-right" data-tip={item.label}>
                         <span className="material-icons text-lg">
                           {item.icon}
@@ -179,10 +200,10 @@ export default function Sidebar({ onToggle }) {
                       </div>
                     ) : (
                       <>
-                        <span className="material-icons text-lg mr-3">
+                        <span className="material-icons text-lg mr-3 flex-shrink-0">
                           {item.icon}
                         </span>
-                        <span className="text-sm font-medium">
+                        <span className="text-sm font-medium truncate">
                           {item.label}
                         </span>
                       </>
@@ -196,23 +217,25 @@ export default function Sidebar({ onToggle }) {
 
         {/* User + Logout */}
         <div className="border-t border-gray-200 p-4">
-          {!collapsed && user && (
+          {/* Always show full user info on mobile, respect collapsed state on desktop */}
+          {(isMobile || !collapsed) && user && (
             <div className="flex items-center mb-3">
-              <div className="w-8 h-8 rounded-full overflow-hidden">
+              <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
                 <img
                   src={user.avatar || userProfile?.avatar || `https://i.pravatar.cc/32?u=${user.email}`}
                   alt={user.name || "User"}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="ml-3 flex-1">
+              <div className="ml-3 flex-1 min-w-0">
                 <div className="text-sm font-medium text-gray-900 truncate">{user.name || "User"}</div>
                 <div className="text-xs text-gray-500 truncate">{user.email}</div>
               </div>
             </div>
           )}
 
-          {collapsed ? (
+          {/* Collapsed state for desktop only */}
+          {collapsed && !isMobile ? (
             <div className="flex flex-col items-center space-y-2">
               {user && (
                 <div className="w-8 h-8 rounded-full overflow-hidden">
@@ -226,19 +249,21 @@ export default function Sidebar({ onToggle }) {
               <div className="tooltip tooltip-right" data-tip="Logout">
                 <button
                   onClick={showLogoutModal}
-                  className="p-1 rounded hover:bg-red-50 text-red-600"
+                  className="p-1 rounded hover:bg-red-50 text-red-600 transition-colors"
+                  aria-label="Logout"
                 >
                   <span className="material-icons text-lg">logout</span>
                 </button>
               </div>
             </div>
           ) : (
+            /* Full logout button for mobile and expanded desktop */
             <button
               onClick={showLogoutModal}
-              className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"
+              className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             >
-              <span className="material-icons text-lg mr-3">logout</span>
-              <span>Logout</span>
+              <span className="material-icons text-lg mr-3 flex-shrink-0">logout</span>
+              <span className="truncate">Logout</span>
             </button>
           )}
         </div>

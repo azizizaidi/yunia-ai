@@ -10,7 +10,7 @@ import { saveConversation, saveAIMemory } from "../../services/api";
  * @param {Array} props.initialMessages - Initial messages to display
  * @returns {JSX.Element} Chat interface component
  */
-const ChatInterface = forwardRef(({ initialMessages = [] }, ref) => {
+const ChatInterface = forwardRef(({ initialMessages = [], isMobile }, ref) => {
   // Use initialMessages if provided, otherwise load from localStorage or use default
   const [messages, setMessages] = useState(() => {
     if (initialMessages && initialMessages.length > 0) {
@@ -230,25 +230,35 @@ const ChatInterface = forwardRef(({ initialMessages = [] }, ref) => {
   return (
     <div className="flex flex-col h-full bg-base-100 rounded-lg shadow-lg">
       {/* Chat header with clear button */}
-      <div className="flex justify-between items-center p-3 border-b border-base-300">
-        <h2 className="text-lg font-semibold">Chat with Yunia AI</h2>
+      <div className={`flex justify-between items-center border-b border-base-300 ${
+        isMobile ? 'p-2 pl-12' : 'p-3'
+      }`}>
+        <h2 className={`font-semibold truncate ${
+          isMobile ? 'text-base' : 'text-lg'
+        }`}>
+          Chat with Yunia AI
+        </h2>
         <button
           onClick={clearChat}
-          className="btn btn-sm btn-ghost"
+          className={`btn btn-ghost ${isMobile ? 'btn-xs' : 'btn-sm'}`}
           aria-label="Clear chat history"
         >
           <span className="material-icons text-sm mr-1">delete</span>
-          Clear chat
+          {!isMobile && <span>Clear chat</span>}
         </button>
       </div>
 
       {/* Chat messages area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className={`flex-1 overflow-y-auto ${
+        isMobile ? 'p-2 space-y-2' : 'p-4 space-y-4'
+      }`}>
         {messages.map((message) => (
-          <ChatMessage key={message.id} message={message} />
+          <ChatMessage key={message.id} message={message} isMobile={isMobile} />
         ))}
         {isLoading && (
-          <div className="flex items-center space-x-2 p-3 rounded-lg bg-base-200 max-w-3xl">
+          <div className={`flex items-center space-x-2 p-3 rounded-lg bg-base-200 ${
+            isMobile ? 'max-w-full' : 'max-w-3xl'
+          }`}>
             <div className="loading loading-dots loading-sm text-primary"></div>
             <span className="text-sm text-base-content/70">Yunia is thinking...</span>
           </div>
@@ -257,15 +267,21 @@ const ChatInterface = forwardRef(({ initialMessages = [] }, ref) => {
       </div>
 
       {/* Input area */}
-      <div className="border-t border-base-300 p-4">
-        <form onSubmit={handleSubmit} className="flex items-end space-x-2">
+      <div className={`border-t border-base-300 ${isMobile ? 'p-2' : 'p-4'}`}>
+        <form onSubmit={handleSubmit} className={`flex items-end ${
+          isMobile ? 'space-x-1' : 'space-x-2'
+        }`}>
           <div className="relative flex-1">
             <textarea
               ref={inputRef}
               value={inputMessage}
               onChange={handleInputChange}
               placeholder="Message Yunia AI..."
-              className="textarea textarea-bordered w-full pr-10 min-h-[60px] max-h-[200px] resize-none"
+              className={`textarea textarea-bordered w-full pr-10 resize-none ${
+                isMobile
+                  ? 'min-h-[50px] max-h-[120px] text-sm'
+                  : 'min-h-[60px] max-h-[200px]'
+              }`}
               rows={1}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
@@ -273,23 +289,28 @@ const ChatInterface = forwardRef(({ initialMessages = [] }, ref) => {
                   handleSubmit(e);
                 }
               }}
+              disabled={isLoading}
             />
             <button
               type="submit"
-              className="absolute bottom-3 right-3 btn btn-circle btn-sm btn-primary"
+              className={`absolute bottom-3 right-3 btn btn-circle btn-primary ${
+                isMobile ? 'btn-xs' : 'btn-sm'
+              }`}
               disabled={!inputMessage.trim() || isLoading}
             >
-              <span className="material-icons text-primary-content">send</span>
+              <span className="material-icons text-primary-content text-sm">send</span>
             </button>
           </div>
           <VoiceInput
             onTranscript={handleVoiceInput}
             onSubmit={handleSubmit}
+            isMobile={isMobile}
           />
         </form>
-        <div className="text-xs text-base-content/50 mt-2 text-center">
+        <div className={`text-xs text-base-content/50 mt-2 text-center ${
+          isMobile ? 'px-1' : ''
+        }`}>
           <p>Yunia AI can make mistakes. Consider checking important information.</p>
-
         </div>
       </div>
     </div>

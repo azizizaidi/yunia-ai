@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { getNotifications, getCurrentUser, getUserProfile } from "../../services/api";
 
-export default function Header() {
+export default function Header({ onMobileMenuToggle, isMobile }) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -91,16 +91,27 @@ export default function Header() {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <div className="navbar bg-base-100 shadow-md z-20">
+    <div className="navbar bg-base-100 shadow-md sticky top-0 z-50 border-b border-base-300 px-2 sm:px-4">
+      {/* Mobile menu button */}
       <div className="flex-none lg:hidden">
-        <label htmlFor="drawer-sidebar" className="btn btn-square btn-ghost drawer-button">
+        <button
+          onClick={onMobileMenuToggle}
+          className="btn btn-square btn-ghost"
+          aria-label="Toggle mobile menu"
+        >
           <span className="material-icons">menu</span>
-        </label>
+        </button>
       </div>
-      <div className="flex-1">
-        <span className="text-lg font-semibold">Yunia AI Dashboard</span>
+
+      {/* Title - responsive */}
+      <div className="flex-1 min-w-0">
+        <span className="text-sm sm:text-lg font-semibold truncate">
+          {isMobile ? "Yunia AI" : "Yunia AI Assistant"}
+        </span>
       </div>
-      <div className="flex-none gap-2">
+
+      {/* Actions - responsive */}
+      <div className="flex-none gap-1 sm:gap-2">
         <div className="dropdown dropdown-end">
           <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
             <div className="indicator">
@@ -110,7 +121,7 @@ export default function Header() {
               )}
             </div>
           </div>
-          <div tabIndex={0} className="mt-3 z-[1] card dropdown-content w-80 bg-base-100 shadow-lg">
+          <div tabIndex={0} className="mt-3 z-[60] card dropdown-content w-72 sm:w-80 bg-base-100 shadow-lg border border-base-300">
             <div className="card-body p-4">
               <span className="font-bold text-lg">
                 {loading ? "Loading..." : `${notifications.length} Notifications`}
@@ -157,7 +168,7 @@ export default function Header() {
               />
             </div>
           </div>
-          <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+          <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[60] p-2 shadow bg-base-100 rounded-box w-48 sm:w-52 border border-base-300">
             <li><a>Profile</a></li>
             <li><a>Settings</a></li>
             <li><a>Logout</a></li>

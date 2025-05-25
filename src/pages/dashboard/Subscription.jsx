@@ -306,7 +306,7 @@ const Subscription = () => {
 
   return (
     <DashboardLayout>
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="p-2 sm:p-4 lg:p-6 max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-12 text-center">
           <h1 className="text-3xl font-bold mb-3 text-gray-900">Choose Your Plan</h1>
