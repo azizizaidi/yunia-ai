@@ -1,9 +1,9 @@
 // src/pages/AdminDashboard.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { logoutUser, getUserStats, getSystemSettings } from "../services/api";
-import useAuth from "../hooks/useAuth";
-import Loader from "../components/ui/Loader";
+import { logoutUser, getUserStats, getSystemSettings } from "../../services/api";
+import useAuth from "../../hooks/useAuth";
+import Loader from "../../components/ui/Loader";
 
 /**
  * Admin Dashboard page component
@@ -136,25 +136,25 @@ const AdminDashboard = () => {
         {/* Admin Sections */}
         {!loading && !error && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* User Management Section */}
-            <div className="bg-white shadow-md rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">User Management</h3>
-              <p className="text-gray-600 mb-4">Manage user accounts, permissions, and activities.</p>
-              <div className="bg-gray-100 p-4 rounded-md">
-                {userStats ? (
-                  <div className="space-y-1">
-                    <p className="text-sm text-gray-500">Total Users: {userStats.totalUsers}</p>
-                    <p className="text-sm text-gray-500">Active Users: {userStats.activeUsers}</p>
-                    <p className="text-sm text-gray-500">Admin Users: {userStats.adminUsers}</p>
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500">Loading user stats...</p>
-                )}
+              {/* User Management Section */}
+              <div className="bg-white shadow-md rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">User Management</h3>
+                <p className="text-gray-600 mb-4">Manage user accounts, permissions, and activities.</p>
+                <div className="bg-gray-100 p-4 rounded-md">
+                  {userStats ? (
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-500">Total Users: {userStats.totalUsers}</p>
+                      <p className="text-sm text-gray-500">Active Users: {userStats.activeUsers}</p>
+                      <p className="text-sm text-gray-500">Admin Users: {userStats.adminUsers}</p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">Loading user stats...</p>
+                  )}
+                </div>
+                <button className="mt-4 w-full bg-[#4a4a9c] text-white py-2 px-4 rounded font-medium hover:bg-[#3a3a7c] focus:outline-none">
+                  Manage Users
+                </button>
               </div>
-              <button className="mt-4 w-full bg-[#4a4a9c] text-white py-2 px-4 rounded font-medium hover:bg-[#3a3a7c] focus:outline-none">
-                Manage Users
-              </button>
-            </div>
 
             {/* System Settings Section */}
             <div className="bg-white shadow-md rounded-lg p-6">

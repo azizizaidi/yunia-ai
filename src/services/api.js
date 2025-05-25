@@ -456,7 +456,95 @@ export const clearAIMemory = (aiType = 'all') => {
 // ===== REAL MEMORY MANAGEMENT FUNCTIONS =====
 
 /**
- * Save conversation to memory with real data persistence
+ * Generate conversation hash for duplicate detection
+ * @param {Object} conversation - Conversation data
+ * @returns {string} Hash string
+ */
+const generateConversationHash = (conversation) => {
+  const content = [
+    conversation.title || '',
+    conversation.content || '',
+    conversation.lastUserMessage || '',
+    conversation.lastAIMessage || ''
+  ].join('|').toLowerCase();
+
+  // Simple hash function
+  let hash = 0;
+  for (let i = 0; i < content.length; i++) {
+    const char = content.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return hash.toString();
+};
+
+/**
+ * Detect conversation topic/category
+ * @param {Object} conversation - Conversation data
+ * @returns {string} Topic category
+ */
+const detectConversationTopic = (conversation) => {
+  const content = [
+    conversation.title || '',
+    conversation.content || '',
+    conversation.lastUserMessage || '',
+    conversation.lastAIMessage || ''
+  ].join(' ').toLowerCase();
+
+  // Topic keywords mapping
+  const topicKeywords = {
+    'income': ['income', 'salary', 'money', 'earnings', 'revenue', 'profit', 'financial', 'budget', 'expense'],
+    'planner': ['plan', 'schedule', 'calendar', 'appointment', 'meeting', 'reminder', 'task', 'todo', 'organize'],
+    'weather': ['weather', 'temperature', 'rain', 'sunny', 'cloudy', 'forecast', 'climate'],
+    'health': ['health', 'exercise', 'fitness', 'diet', 'medical', 'doctor', 'wellness'],
+    'work': ['work', 'job', 'career', 'project', 'deadline', 'office', 'business', 'professional'],
+    'personal': ['personal', 'family', 'friend', 'relationship', 'hobby', 'interest', 'lifestyle']
+  };
+
+  // Find matching topic
+  for (const [topic, keywords] of Object.entries(topicKeywords)) {
+    if (keywords.some(keyword => content.includes(keyword))) {
+      return topic;
+    }
+  }
+
+  return 'general';
+};
+
+/**
+ * Check if conversation is similar to existing ones
+ * @param {Object} newConversation - New conversation to check
+ * @param {Array} existingConversations - Existing conversations
+ * @returns {Object|null} Similar conversation or null
+ */
+const findSimilarConversation = (newConversation, existingConversations) => {
+  const newHash = generateConversationHash(newConversation);
+  const newTopic = detectConversationTopic(newConversation);
+
+  // Check for exact hash match (duplicate)
+  const exactMatch = existingConversations.find(conv => conv.hash === newHash);
+  if (exactMatch) {
+    return { type: 'duplicate', conversation: exactMatch };
+  }
+
+  // Check for similar topic within last 24 hours
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const recentSimilar = existingConversations.find(conv => {
+    const convDate = new Date(conv.timestamp);
+    return conv.topic === newTopic &&
+           convDate > oneDayAgo &&
+           newTopic !== 'general'; // Don't merge general conversations
+  });
+
+  if (recentSimilar) {
+    return { type: 'similar', conversation: recentSimilar };
+  }
+
+  return null;
+};
+
+/**
+ * Save conversation to memory with duplicate detection and topic categorization
  * @param {Object} conversation - Conversation data
  * @returns {Promise<Object>} Saved conversation object
  */
@@ -465,16 +553,50 @@ export const saveConversation = async (conversation) => {
     const currentUser = getCurrentUser();
     if (!currentUser) throw new Error('User not authenticated');
 
+    // Get existing conversations
+    const conversationsKey = `conversations_${currentUser.id}`;
+    const existingConversations = JSON.parse(localStorage.getItem(conversationsKey) || '[]');
+
+    // Check for duplicates or similar conversations
+    const similarCheck = findSimilarConversation(conversation, existingConversations);
+
+    if (similarCheck) {
+      if (similarCheck.type === 'duplicate') {
+        console.log('Duplicate conversation detected, skipping save');
+        return similarCheck.conversation;
+      } else if (similarCheck.type === 'similar') {
+        // Update existing similar conversation instead of creating new one
+        const existingIndex = existingConversations.findIndex(c => c.id === similarCheck.conversation.id);
+        if (existingIndex !== -1) {
+          existingConversations[existingIndex] = {
+            ...existingConversations[existingIndex],
+            content: conversation.content || existingConversations[existingIndex].content,
+            summary: conversation.summary || existingConversations[existingIndex].summary,
+            messageCount: (existingConversations[existingIndex].messageCount || 0) + (conversation.messageCount || 0),
+            lastUserMessage: conversation.lastUserMessage || existingConversations[existingIndex].lastUserMessage,
+            lastAIMessage: conversation.lastAIMessage || existingConversations[existingIndex].lastAIMessage,
+            timestamp: new Date().toISOString(), // Update timestamp
+            updatedCount: (existingConversations[existingIndex].updatedCount || 0) + 1
+          };
+
+          localStorage.setItem(conversationsKey, JSON.stringify(existingConversations));
+          console.log('Updated similar conversation:', existingConversations[existingIndex].topic);
+          return existingConversations[existingIndex];
+        }
+      }
+    }
+
+    // Create new conversation with enhanced data
     const conversationData = {
       id: Date.now(),
       userId: currentUser.id,
       timestamp: new Date().toISOString(),
+      hash: generateConversationHash(conversation),
+      topic: detectConversationTopic(conversation),
+      updatedCount: 0,
       ...conversation
     };
 
-    // Save to localStorage
-    const conversationsKey = `conversations_${currentUser.id}`;
-    const existingConversations = JSON.parse(localStorage.getItem(conversationsKey) || '[]');
     existingConversations.push(conversationData);
 
     // Keep only last 50 conversations
@@ -488,9 +610,11 @@ export const saveConversation = async (conversation) => {
     saveAIMemory(conversation.aiType || 'gemini', {
       type: 'conversation',
       conversationId: conversationData.id,
+      topic: conversationData.topic,
       ...conversation
     });
 
+    console.log('New conversation saved:', conversationData.topic);
     return conversationData;
   } catch (error) {
     console.error('Error saving conversation:', error);
@@ -513,6 +637,234 @@ export const getConversations = async () => {
     console.error('Error getting conversations:', error);
     return [];
   }
+};
+
+/**
+ * Get conversations grouped by topic
+ * @returns {Promise<Object>} Object with topics as keys and conversation arrays as values
+ */
+export const getConversationsByTopic = async () => {
+  try {
+    const conversations = await getConversations();
+    const groupedConversations = {};
+
+    conversations.forEach(conv => {
+      const topic = conv.topic || 'general';
+      if (!groupedConversations[topic]) {
+        groupedConversations[topic] = [];
+      }
+      groupedConversations[topic].push(conv);
+    });
+
+    // Sort conversations within each topic by timestamp (newest first)
+    Object.keys(groupedConversations).forEach(topic => {
+      groupedConversations[topic].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    });
+
+    return groupedConversations;
+  } catch (error) {
+    console.error('Error getting conversations by topic:', error);
+    return {};
+  }
+};
+
+/**
+ * Get conversation statistics by topic
+ * @returns {Promise<Object>} Statistics object
+ */
+export const getConversationTopicStats = async () => {
+  try {
+    const conversations = await getConversations();
+    const stats = {
+      total: conversations.length,
+      byTopic: {},
+      duplicatesDetected: 0,
+      mergedConversations: 0
+    };
+
+    conversations.forEach(conv => {
+      const topic = conv.topic || 'general';
+      if (!stats.byTopic[topic]) {
+        stats.byTopic[topic] = {
+          count: 0,
+          lastUpdated: null,
+          totalMessages: 0,
+          updatedCount: 0
+        };
+      }
+
+      stats.byTopic[topic].count++;
+      stats.byTopic[topic].totalMessages += conv.messageCount || 0;
+      stats.byTopic[topic].updatedCount += conv.updatedCount || 0;
+
+      if (!stats.byTopic[topic].lastUpdated || new Date(conv.timestamp) > new Date(stats.byTopic[topic].lastUpdated)) {
+        stats.byTopic[topic].lastUpdated = conv.timestamp;
+      }
+    });
+
+    // Count merged conversations
+    stats.mergedConversations = conversations.filter(conv => (conv.updatedCount || 0) > 0).length;
+
+    return stats;
+  } catch (error) {
+    console.error('Error getting conversation topic stats:', error);
+    return { total: 0, byTopic: {}, duplicatesDetected: 0, mergedConversations: 0 };
+  }
+};
+
+/**
+ * Scan and remove duplicate conversations
+ * @returns {Promise<Object>} Cleanup results
+ */
+export const scanAndRemoveDuplicates = async () => {
+  try {
+    const currentUser = getCurrentUser();
+    if (!currentUser) throw new Error('User not authenticated');
+
+    const conversationsKey = `conversations_${currentUser.id}`;
+    const conversations = JSON.parse(localStorage.getItem(conversationsKey) || '[]');
+
+    console.log(`🔍 Scanning ${conversations.length} conversations for duplicates...`);
+
+    const duplicateReport = {
+      totalScanned: conversations.length,
+      duplicatesFound: 0,
+      duplicatesRemoved: 0,
+      uniqueConversations: 0,
+      duplicateDetails: []
+    };
+
+    // Create a map to track unique conversations
+    const uniqueConversations = new Map();
+    const duplicatesToRemove = [];
+
+    conversations.forEach((conv, index) => {
+      // Generate hash for this conversation
+      const hash = conv.hash || generateConversationHash(conv);
+
+      // Check if we've seen this hash before
+      if (uniqueConversations.has(hash)) {
+        const existingConv = uniqueConversations.get(hash);
+        duplicateReport.duplicatesFound++;
+
+        // Mark for removal
+        duplicatesToRemove.push(index);
+
+        // Log duplicate details
+        duplicateReport.duplicateDetails.push({
+          duplicate: {
+            id: conv.id,
+            title: conv.title || 'Untitled',
+            timestamp: conv.timestamp,
+            topic: conv.topic || 'general'
+          },
+          original: {
+            id: existingConv.id,
+            title: existingConv.title || 'Untitled',
+            timestamp: existingConv.timestamp,
+            topic: existingConv.topic || 'general'
+          }
+        });
+
+        console.log(`🔍 Duplicate found: "${conv.title || 'Untitled'}" (ID: ${conv.id})`);
+      } else {
+        // Add to unique conversations map
+        uniqueConversations.set(hash, conv);
+      }
+    });
+
+    // Remove duplicates (in reverse order to maintain indices)
+    const cleanedConversations = [...conversations];
+    duplicatesToRemove.reverse().forEach(index => {
+      cleanedConversations.splice(index, 1);
+      duplicateReport.duplicatesRemoved++;
+    });
+
+    duplicateReport.uniqueConversations = cleanedConversations.length;
+
+    // Save cleaned conversations back to localStorage
+    localStorage.setItem(conversationsKey, JSON.stringify(cleanedConversations));
+
+    console.log(`✅ Cleanup completed: ${duplicateReport.duplicatesRemoved} duplicates removed`);
+    console.log(`📊 Final count: ${duplicateReport.uniqueConversations} unique conversations`);
+
+    return duplicateReport;
+  } catch (error) {
+    console.error('Error scanning and removing duplicates:', error);
+    throw error;
+  }
+};
+
+/**
+ * Find similar conversations (same content but different IDs)
+ * @returns {Promise<Array>} Array of similar conversation groups
+ */
+export const findSimilarConversations = async () => {
+  try {
+    const conversations = await getConversations();
+    const similarGroups = [];
+    const processed = new Set();
+
+    conversations.forEach((conv1, index1) => {
+      if (processed.has(conv1.id)) return;
+
+      const similarConversations = [conv1];
+
+      conversations.forEach((conv2, index2) => {
+        if (index1 !== index2 && !processed.has(conv2.id)) {
+          // Check for similar content
+          const similarity = calculateContentSimilarity(conv1, conv2);
+          if (similarity > 0.8) { // 80% similarity threshold
+            similarConversations.push(conv2);
+            processed.add(conv2.id);
+          }
+        }
+      });
+
+      if (similarConversations.length > 1) {
+        similarGroups.push(similarConversations);
+      }
+      processed.add(conv1.id);
+    });
+
+    return similarGroups;
+  } catch (error) {
+    console.error('Error finding similar conversations:', error);
+    return [];
+  }
+};
+
+/**
+ * Calculate content similarity between two conversations
+ * @param {Object} conv1 - First conversation
+ * @param {Object} conv2 - Second conversation
+ * @returns {number} Similarity score (0-1)
+ */
+const calculateContentSimilarity = (conv1, conv2) => {
+  const content1 = [
+    conv1.title || '',
+    conv1.content || '',
+    conv1.lastUserMessage || '',
+    conv1.lastAIMessage || ''
+  ].join(' ').toLowerCase();
+
+  const content2 = [
+    conv2.title || '',
+    conv2.content || '',
+    conv2.lastUserMessage || '',
+    conv2.lastAIMessage || ''
+  ].join(' ').toLowerCase();
+
+  // Simple similarity calculation based on common words
+  const words1 = content1.split(/\s+/).filter(word => word.length > 2);
+  const words2 = content2.split(/\s+/).filter(word => word.length > 2);
+
+  if (words1.length === 0 || words2.length === 0) return 0;
+
+  const commonWords = words1.filter(word => words2.includes(word));
+  const similarity = (commonWords.length * 2) / (words1.length + words2.length);
+
+  return similarity;
 };
 
 /**

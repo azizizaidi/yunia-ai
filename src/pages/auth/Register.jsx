@@ -1,7 +1,7 @@
 // src/pages/RegisterPage.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { registerUser } from "../services/api";
+import { registerUser } from "../../services/api";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");

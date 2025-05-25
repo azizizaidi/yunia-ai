@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "../layout/DashboardLayout";
-import ChatDashboard from "../components/chat/ChatDashboard";
-import useAuth from "../hooks/useAuth";
+import DashboardLayout from "../../layout/DashboardLayout";
+import ChatDashboard from "../../components/chat/ChatDashboard";
+import useAuth from "../../hooks/useAuth";
 
 /**
  * Dashboard page component
@@ -41,7 +41,7 @@ const DashboardPage = () => {
   return (
     <DashboardLayout>
       <div className="p-2 max-w-7xl mx-auto">
-        
+
 
         {/* Chat and Voice Interface */}
         <ChatDashboard />
