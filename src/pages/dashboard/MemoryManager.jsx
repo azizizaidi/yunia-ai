@@ -259,7 +259,7 @@ const MemoryManager = () => {
     <DashboardLayout>
       <div className="p-6">
         <div className="mb-8">
-          <h1 className="text-2xl font-semibold mb-3 text-gray-800">Memory Manager</h1>
+          <h1 className="text-3xl font-bold mb-3 text-gray-800">Memory Manager</h1>
           <p className="text-gray-600 text-base leading-relaxed">
             Manage how Yunia learns and remembers your preferences and conversations
           </p>

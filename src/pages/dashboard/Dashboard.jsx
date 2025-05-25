@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../layout/DashboardLayout";
 import ChatDashboard from "../../components/chat/ChatDashboard";
+import UsageMonitor from "../../components/subscription/UsageMonitor";
 import useAuth from "../../hooks/useAuth";
 
 /**
@@ -41,7 +42,8 @@ const DashboardPage = () => {
   return (
     <DashboardLayout>
       <div className="p-2 max-w-7xl mx-auto">
-
+        {/* Usage Monitor - Shows subscription warnings */}
+        <UsageMonitor className="mb-4" />
 
         {/* Chat and Voice Interface */}
         <ChatDashboard />
