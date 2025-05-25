@@ -7,7 +7,7 @@ import {
   formatRetentionPeriod,
   getRetentionRecommendations
 } from '../../services/dataRetentionService';
-import { getCurrentSubscription } from '../../services/subscriptionService';
+import { getCurrentSubscriptionPlan } from '../../services/subscriptionService';
 
 /**
  * Retention Extensions Component - Add-on data retention plans
@@ -32,7 +32,7 @@ const RetentionExtensions = ({ className = '' }) => {
       const [extensions, active, plan, total, recs] = await Promise.all([
         getAvailableExtensions(),
         getActiveExtensions(),
-        getCurrentSubscription(),
+        getCurrentSubscriptionPlan(),
         getTotalRetentionPeriod(),
         getRetentionRecommendations()
       ]);
@@ -53,7 +53,7 @@ const RetentionExtensions = ({ className = '' }) => {
     try {
       setPurchasing(extensionId);
       const result = await purchaseRetentionExtension(extensionId);
-      
+
       if (result.success) {
         alert(result.message);
         await loadRetentionData(); // Refresh data

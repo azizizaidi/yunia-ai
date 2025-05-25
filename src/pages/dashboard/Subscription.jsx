@@ -1,8 +1,21 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "../../layout/DashboardLayout";
 import { getMemoryStatistics, getCurrentUser } from "../../services/api";
+import {
+  getSubscriptionData,
+  getCurrentSubscription,
+  getBillingHistory,
+  cancelSubscription,
+  reactivateSubscription,
+  updateUsageTracking,
+  upgradeSubscription
+} from "../../services/subscriptionService";
 import Loader from "../../components/ui/Loader";
 import RetentionExtensions from "../../components/subscription/RetentionExtensions";
+import PaymentModal from "../../components/payment/PaymentModal";
+import { getStripe } from "../../services/stripeService";
+// Import test utilities for development
+import "../../utils/testSubscriptionStorage";
 
 /**
  * Subscription page - Memory-based pricing plans for Yunia AI
@@ -11,9 +24,14 @@ import RetentionExtensions from "../../components/subscription/RetentionExtensio
 const Subscription = () => {
   const [loading, setLoading] = useState(true);
   const [memoryStats, setMemoryStats] = useState({});
-  const [currentPlan, setCurrentPlan] = useState('free');
+  const [currentSubscription, setCurrentSubscription] = useState(null);
   const [memoryUsage, setMemoryUsage] = useState(0);
   const [openFaq, setOpenFaq] = useState(null);
+  const [paymentModal, setPaymentModal] = useState({ isOpen: false, planData: null });
+  const [stripePromise] = useState(() => getStripe());
+  const [billingHistory, setBillingHistory] = useState([]);
+  const [showBillingHistory, setShowBillingHistory] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   // Subscription plans with memory-based pricing
   const plans = [
@@ -129,12 +147,16 @@ const Subscription = () => {
   ];
 
   useEffect(() => {
-    loadMemoryData();
+    loadSubscriptionData();
   }, []);
 
-  const loadMemoryData = async () => {
+  const loadSubscriptionData = async () => {
     try {
       setLoading(true);
+      const user = getCurrentUser();
+      if (!user) return;
+
+      // Load memory statistics
       const stats = await getMemoryStatistics();
       setMemoryStats(stats);
 
@@ -142,11 +164,25 @@ const Subscription = () => {
       const approximateUsage = calculateMemoryUsage(stats);
       setMemoryUsage(approximateUsage);
 
-      // Determine current plan based on usage (for demo)
-      const user = getCurrentUser();
-      setCurrentPlan(user?.subscription || 'free');
+      // Load current subscription data
+      const subscription = getCurrentSubscription(user.id);
+      setCurrentSubscription(subscription);
+
+      // Load billing history
+      const history = getBillingHistory(user.id);
+      setBillingHistory(history);
+
+      // Update usage tracking in subscription data
+      if (subscription) {
+        updateUsageTracking(user.id, {
+          memory: {
+            used: approximateUsage,
+            limit: subscription.plan?.memoryLimit || 50
+          }
+        });
+      }
     } catch (error) {
-      console.error('Error loading memory data:', error);
+      console.error('Error loading subscription data:', error);
     } finally {
       setLoading(false);
     }
@@ -162,7 +198,8 @@ const Subscription = () => {
   };
 
   const getCurrentPlanData = () => {
-    return plans.find(plan => plan.id === currentPlan) || plans[0];
+    const planId = currentSubscription?.planId || 'free';
+    return plans.find(plan => plan.id === planId) || plans[0];
   };
 
   const getUsagePercentage = () => {
@@ -176,6 +213,85 @@ const Subscription = () => {
 
   const toggleFaq = (index) => {
     setOpenFaq(openFaq === index ? null : index);
+  };
+
+  const handleUpgradePlan = async (plan) => {
+    if (plan.price === 0) {
+      // Handle free plan switch
+      setCancelling(true);
+      try {
+        const result = await upgradeSubscription('free');
+        if (result.success) {
+          alert('Switched to Free plan successfully!');
+          loadSubscriptionData(); // Reload to show updated status
+        } else {
+          alert(result.message || 'Failed to switch to Free plan. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error switching to free plan:', error);
+        alert('Failed to switch to Free plan. Please try again.');
+      } finally {
+        setCancelling(false);
+      }
+    } else {
+      // Open payment modal for paid plans
+      setPaymentModal({
+        isOpen: true,
+        planData: plan
+      });
+    }
+  };
+
+  const handlePaymentSuccess = (result) => {
+    // Reload subscription data to reflect changes
+    loadSubscriptionData();
+
+    alert(`Successfully upgraded to ${paymentModal.planData.name} plan!`);
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!currentSubscription) return;
+
+    const reason = prompt('Please tell us why you\'re cancelling (optional):');
+    if (reason === null) return; // User clicked cancel
+
+    setCancelling(true);
+    try {
+      const result = await cancelSubscription(currentSubscription.userId, reason);
+      if (result.success) {
+        alert(result.message);
+        loadSubscriptionData(); // Reload to show updated status
+      } else {
+        alert(result.message);
+      }
+    } catch (error) {
+      alert('Failed to cancel subscription. Please try again.');
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const handleReactivateSubscription = async () => {
+    if (!currentSubscription) return;
+
+    setCancelling(true);
+    try {
+      const result = await reactivateSubscription(currentSubscription.userId);
+      if (result.success) {
+        alert(result.message);
+        loadSubscriptionData(); // Reload to show updated status
+      } else {
+        alert(result.message);
+      }
+    } catch (error) {
+      alert('Failed to reactivate subscription. Please try again.');
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const closePaymentModal = () => {
+    setPaymentModal({ isOpen: false, planData: null });
   };
 
   if (loading) {
@@ -265,7 +381,7 @@ const Subscription = () => {
               key={plan.id}
               className={`relative bg-white rounded-xl border-2 transition-all duration-200 hover:shadow-lg w-full max-w-sm ${
                 plan.popular ? 'border-blue-500 shadow-lg' : 'border-gray-200'
-              } ${currentPlan === plan.id ? 'bg-blue-50 border-blue-300' : ''}`}
+              } ${currentSubscription?.planId === plan.id ? 'bg-blue-50 border-blue-300' : ''}`}
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
@@ -274,7 +390,7 @@ const Subscription = () => {
                   </span>
                 </div>
               )}
-              {currentPlan === plan.id && (
+              {currentSubscription?.planId === plan.id && (
                 <div className="absolute -top-3 right-4">
                   <span className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-medium">
                     Current Plan
@@ -345,7 +461,7 @@ const Subscription = () => {
 
                 {/* Action Button */}
                 <div className="mt-auto">
-                  {currentPlan === plan.id ? (
+                  {currentSubscription?.planId === plan.id ? (
                     <button className="w-full bg-green-100 text-green-700 py-3 px-4 rounded-lg font-medium cursor-not-allowed">
                       ✓ Current Plan
                     </button>
@@ -366,12 +482,15 @@ const Subscription = () => {
                           ? 'bg-blue-600 hover:bg-blue-700 text-white'
                           : 'bg-gray-900 hover:bg-gray-800 text-white'
                       }`}
-                      onClick={() => {
-                        // TODO: Implement subscription upgrade/downgrade
-                        alert(`Upgrading to ${plan.name} plan - Payment integration coming soon!`);
-                      }}
+                      onClick={() => handleUpgradePlan(plan)}
+                      disabled={cancelling && plan.price === 0}
                     >
-                      {plan.price === 0 ? 'Switch to Free' : 'Upgrade Plan'}
+                      {cancelling && plan.price === 0
+                        ? 'Switching...'
+                        : plan.price === 0
+                          ? 'Switch to Free'
+                          : 'Upgrade Plan'
+                      }
                     </button>
                   )}
                 </div>
@@ -532,6 +651,155 @@ const Subscription = () => {
           </div>
         </div>
 
+        {/* Subscription Management */}
+        {currentSubscription && (
+          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">Subscription Management</h3>
+              <button
+                className="btn btn-sm btn-outline"
+                onClick={() => setShowBillingHistory(!showBillingHistory)}
+              >
+                {showBillingHistory ? 'Hide' : 'Show'} Billing History
+              </button>
+            </div>
+
+            {/* Current Subscription Status */}
+            <div className="grid md:grid-cols-2 gap-6 mb-6">
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Current Plan:</span>
+                  <span className="font-medium text-gray-900">{currentSubscription.plan?.name || 'Unknown'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Status:</span>
+                  <span className={`font-medium ${
+                    currentSubscription.isActive ? 'text-green-600' :
+                    currentSubscription.isCancelled ? 'text-red-600' : 'text-gray-600'
+                  }`}>
+                    {currentSubscription.status === 'active' ? 'Active' :
+                     currentSubscription.status === 'cancelled' ? 'Cancelled' : 'Unknown'}
+                  </span>
+                </div>
+                {currentSubscription.endDate && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">
+                      {currentSubscription.isCancelled ? 'Access Until:' : 'Next Billing:'}
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {new Date(currentSubscription.endDate).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
+                {currentSubscription.daysUntilExpiry !== null && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Days Remaining:</span>
+                    <span className="font-medium text-gray-900">{currentSubscription.daysUntilExpiry}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Auto Renew:</span>
+                  <span className={`font-medium ${currentSubscription.autoRenew ? 'text-green-600' : 'text-red-600'}`}>
+                    {currentSubscription.autoRenew ? 'Enabled' : 'Disabled'}
+                  </span>
+                </div>
+                {currentSubscription.cancellationDate && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Cancelled On:</span>
+                    <span className="font-medium text-gray-900">
+                      {new Date(currentSubscription.cancellationDate).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
+                {currentSubscription.cancellationReason && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Reason:</span>
+                    <span className="font-medium text-gray-900 text-sm">
+                      {currentSubscription.cancellationReason}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              {currentSubscription.isCancelled ? (
+                <button
+                  className="btn btn-primary"
+                  onClick={handleReactivateSubscription}
+                  disabled={cancelling}
+                >
+                  {cancelling ? 'Processing...' : 'Reactivate Subscription'}
+                </button>
+              ) : currentSubscription.planId !== 'free' && (
+                <button
+                  className="btn btn-error btn-outline"
+                  onClick={handleCancelSubscription}
+                  disabled={cancelling}
+                >
+                  {cancelling ? 'Processing...' : 'Cancel Subscription'}
+                </button>
+              )}
+            </div>
+
+            {/* Billing History */}
+            {showBillingHistory && (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h4 className="text-md font-semibold text-gray-900 mb-4">Billing History</h4>
+                {billingHistory.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left py-2 text-gray-600">Date</th>
+                          <th className="text-left py-2 text-gray-600">Description</th>
+                          <th className="text-left py-2 text-gray-600">Amount</th>
+                          <th className="text-left py-2 text-gray-600">Status</th>
+                          <th className="text-left py-2 text-gray-600">Transaction ID</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {billingHistory.slice(0, 10).map((record) => (
+                          <tr key={record.id} className="border-b border-gray-100">
+                            <td className="py-2 text-gray-900">
+                              {new Date(record.date).toLocaleDateString()}
+                            </td>
+                            <td className="py-2 text-gray-900">{record.description}</td>
+                            <td className="py-2 text-gray-900">
+                              {record.amount > 0 ? `${record.currency}${record.amount}` : '-'}
+                            </td>
+                            <td className="py-2">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                record.status === 'paid' ? 'bg-green-100 text-green-800' :
+                                record.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                                record.status === 'reactivated' ? 'bg-blue-100 text-blue-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {record.status}
+                              </span>
+                            </td>
+                            <td className="py-2 text-gray-600 font-mono text-xs">
+                              {record.transactionId}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    No billing history available
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* FAQ Section */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-6">Frequently Asked Questions</h3>
@@ -602,6 +870,15 @@ const Subscription = () => {
             ))}
           </div>
         </div>
+
+        {/* Payment Modal */}
+        <PaymentModal
+          isOpen={paymentModal.isOpen}
+          onClose={closePaymentModal}
+          planData={paymentModal.planData}
+          stripePromise={stripePromise}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
       </div>
     </DashboardLayout>
   );

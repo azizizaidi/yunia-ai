@@ -4,7 +4,7 @@
  */
 
 import { getCurrentUser, getMemoryStatistics } from './api';
-import { getCurrentSubscription } from './subscriptionService';
+import { getCurrentSubscriptionPlan } from './subscriptionService';
 
 // Data Retention Extension Plans
 export const RETENTION_EXTENSIONS = {
@@ -135,7 +135,7 @@ export const RETENTION_EXTENSIONS = {
  */
 export const getAvailableExtensions = () => {
   try {
-    const currentPlan = getCurrentSubscription();
+    const currentPlan = getCurrentSubscriptionPlan();
     const planId = currentPlan.id;
 
     switch (planId) {
@@ -188,7 +188,7 @@ export const getActiveExtensions = () => {
  */
 export const getTotalRetentionPeriod = () => {
   try {
-    const currentPlan = getCurrentSubscription();
+    const currentPlan = getCurrentSubscriptionPlan();
     const activeExtensions = getActiveExtensions();
 
     let totalDays = currentPlan.dataRetention;
@@ -207,7 +207,7 @@ export const getTotalRetentionPeriod = () => {
     return totalDays;
   } catch (error) {
     console.error('Error calculating total retention:', error);
-    return getCurrentSubscription().dataRetention;
+    return getCurrentSubscriptionPlan().dataRetention;
   }
 };
 
@@ -326,7 +326,7 @@ export const formatRetentionPeriod = (days) => {
 export const getRetentionRecommendations = async () => {
   try {
     const memoryStats = await getMemoryStatistics();
-    const currentPlan = getCurrentSubscription();
+    const currentPlan = getCurrentSubscriptionPlan();
     const availableExtensions = getAvailableExtensions();
 
     // Analyze usage patterns

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { checkUsageLimits, getCurrentSubscription } from '../../services/subscriptionService';
+import { checkUsageLimits, getCurrentSubscriptionPlan } from '../../services/subscriptionService';
 
 /**
  * Usage Monitor Component - Displays subscription usage warnings and limits
@@ -24,7 +24,7 @@ const UsageMonitor = ({ className = '' }) => {
       setLoading(true);
       const [status, plan] = await Promise.all([
         checkUsageLimits(),
-        getCurrentSubscription()
+        getCurrentSubscriptionPlan()
       ]);
 
       setUsageStatus(status);

@@ -110,10 +110,10 @@ export const SUBSCRIPTION_PLANS = {
 };
 
 /**
- * Get current user's subscription plan
+ * Get current user's subscription plan (legacy function for backward compatibility)
  * @returns {Object} Current subscription plan
  */
-export const getCurrentSubscription = () => {
+export const getCurrentSubscriptionPlan = () => {
   try {
     const user = getCurrentUser();
     if (!user) return SUBSCRIPTION_PLANS.free;
@@ -121,7 +121,7 @@ export const getCurrentSubscription = () => {
     const planId = user.subscription || 'free';
     return SUBSCRIPTION_PLANS[planId] || SUBSCRIPTION_PLANS.free;
   } catch (error) {
-    console.error('Error getting current subscription:', error);
+    console.error('Error getting current subscription plan:', error);
     return SUBSCRIPTION_PLANS.free;
   }
 };
@@ -147,7 +147,7 @@ export const calculateMemoryUsage = (memoryStats) => {
  */
 export const checkUsageLimits = async () => {
   try {
-    const currentPlan = getCurrentSubscription();
+    const currentPlan = getCurrentSubscriptionPlan();
     const memoryStats = await getMemoryStatistics();
     const memoryUsage = calculateMemoryUsage(memoryStats);
 
@@ -277,32 +277,187 @@ export const getPlanComparison = () => {
 };
 
 /**
- * Simulate subscription upgrade (placeholder for payment integration)
+ * Get subscription data from localStorage
+ * @param {number} userId - User ID
+ * @returns {Object} Subscription data
+ */
+export const getSubscriptionData = (userId) => {
+  try {
+    const subscriptionKey = `subscription_${userId}`;
+    const data = localStorage.getItem(subscriptionKey);
+
+    if (!data) {
+      // Return default free subscription
+      return {
+        userId,
+        planId: 'free',
+        status: 'active',
+        startDate: new Date().toISOString(),
+        endDate: null,
+        autoRenew: true,
+        billingHistory: [],
+        paymentMethods: [],
+        usageTracking: {
+          memory: { used: 0, limit: SUBSCRIPTION_PLANS.free.memoryLimit },
+          conversations: { used: 0, limit: SUBSCRIPTION_PLANS.free.conversationLimit },
+          interactions: { used: 0, limit: SUBSCRIPTION_PLANS.free.interactionLimit },
+          reminders: { used: 0, limit: SUBSCRIPTION_PLANS.free.reminderLimit }
+        },
+        extensions: [],
+        lastUpdated: new Date().toISOString()
+      };
+    }
+
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('Error getting subscription data:', error);
+    return null;
+  }
+};
+
+/**
+ * Save subscription data to localStorage
+ * @param {Object} subscriptionData - Subscription data to save
+ * @returns {boolean} Success status
+ */
+export const saveSubscriptionData = (subscriptionData) => {
+  try {
+    const subscriptionKey = `subscription_${subscriptionData.userId}`;
+    subscriptionData.lastUpdated = new Date().toISOString();
+    localStorage.setItem(subscriptionKey, JSON.stringify(subscriptionData));
+    return true;
+  } catch (error) {
+    console.error('Error saving subscription data:', error);
+    return false;
+  }
+};
+
+/**
+ * Add billing record to subscription history
+ * @param {number} userId - User ID
+ * @param {Object} billingRecord - Billing record to add
+ * @returns {boolean} Success status
+ */
+export const addBillingRecord = (userId, billingRecord) => {
+  try {
+    const subscriptionData = getSubscriptionData(userId);
+    if (!subscriptionData) return false;
+
+    const record = {
+      id: Date.now(),
+      date: new Date().toISOString(),
+      ...billingRecord
+    };
+
+    subscriptionData.billingHistory.unshift(record);
+
+    // Keep only last 24 months of billing history
+    if (subscriptionData.billingHistory.length > 24) {
+      subscriptionData.billingHistory = subscriptionData.billingHistory.slice(0, 24);
+    }
+
+    return saveSubscriptionData(subscriptionData);
+  } catch (error) {
+    console.error('Error adding billing record:', error);
+    return false;
+  }
+};
+
+/**
+ * Update subscription usage tracking
+ * @param {number} userId - User ID
+ * @param {Object} usageUpdate - Usage data to update
+ * @returns {boolean} Success status
+ */
+export const updateUsageTracking = (userId, usageUpdate) => {
+  try {
+    const subscriptionData = getSubscriptionData(userId);
+    if (!subscriptionData) return false;
+
+    subscriptionData.usageTracking = {
+      ...subscriptionData.usageTracking,
+      ...usageUpdate
+    };
+
+    return saveSubscriptionData(subscriptionData);
+  } catch (error) {
+    console.error('Error updating usage tracking:', error);
+    return false;
+  }
+};
+
+/**
+ * Simulate subscription upgrade with comprehensive data storage
  * @param {string} planId - Target plan ID
+ * @param {Object} paymentData - Payment information
  * @returns {Promise<Object>} Upgrade result
  */
-export const upgradeSubscription = async (planId) => {
+export const upgradeSubscription = async (planId, paymentData = {}) => {
   try {
     const targetPlan = SUBSCRIPTION_PLANS[planId];
     if (!targetPlan) {
       throw new Error('Invalid plan ID');
     }
 
-    // TODO: Integrate with payment gateway (Stripe, PayPal, etc.)
-    // For now, just simulate the upgrade
-
     const user = getCurrentUser();
-    if (user) {
-      // Update user subscription in localStorage (temporary)
-      const updatedUser = { ...user, subscription: planId };
-      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    if (!user) {
+      throw new Error('User not authenticated');
     }
 
-    return {
-      success: true,
-      message: `Successfully upgraded to ${targetPlan.name} plan!`,
-      plan: targetPlan
+    // Get current subscription data
+    const subscriptionData = getSubscriptionData(user.id);
+
+    // Calculate billing dates
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + 1); // Add 1 month
+
+    // Update subscription data
+    const updatedSubscription = {
+      ...subscriptionData,
+      planId: planId,
+      status: 'active',
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      autoRenew: true,
+      usageTracking: {
+        memory: { used: subscriptionData.usageTracking.memory.used, limit: targetPlan.memoryLimit },
+        conversations: { used: subscriptionData.usageTracking.conversations.used, limit: targetPlan.conversationLimit },
+        interactions: { used: subscriptionData.usageTracking.interactions.used, limit: targetPlan.interactionLimit },
+        reminders: { used: subscriptionData.usageTracking.reminders.used, limit: targetPlan.reminderLimit }
+      }
     };
+
+    // Add billing record
+    const billingRecord = {
+      planId: planId,
+      planName: targetPlan.name,
+      amount: targetPlan.price,
+      currency: targetPlan.currency,
+      status: 'paid',
+      paymentMethod: paymentData.paymentMethod || 'card',
+      transactionId: paymentData.transactionId || `txn_${Date.now()}`,
+      description: `Subscription to ${targetPlan.name} plan`
+    };
+
+    addBillingRecord(user.id, billingRecord);
+
+    // Save updated subscription
+    if (saveSubscriptionData(updatedSubscription)) {
+      // Update user object with current subscription
+      const updatedUser = { ...user, subscription: planId };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+
+      return {
+        success: true,
+        message: `Successfully upgraded to ${targetPlan.name} plan!`,
+        plan: targetPlan,
+        subscription: updatedSubscription,
+        billingRecord
+      };
+    } else {
+      throw new Error('Failed to save subscription data');
+    }
   } catch (error) {
     console.error('Error upgrading subscription:', error);
     return {
@@ -314,19 +469,227 @@ export const upgradeSubscription = async (planId) => {
 };
 
 /**
- * Get billing history (placeholder)
+ * Get billing history from localStorage
+ * @param {number} userId - User ID (optional, uses current user if not provided)
  * @returns {Array} Billing history
  */
-export const getBillingHistory = () => {
-  // TODO: Implement actual billing history from backend
-  return [
-    {
-      id: 1,
-      date: '2025-01-01',
-      plan: 'Premium',
-      amount: 19,
-      currency: 'RM',
-      status: 'paid'
+export const getBillingHistory = (userId = null) => {
+  try {
+    const user = userId ? { id: userId } : getCurrentUser();
+    if (!user) return [];
+
+    const subscriptionData = getSubscriptionData(user.id);
+    return subscriptionData ? subscriptionData.billingHistory : [];
+  } catch (error) {
+    console.error('Error getting billing history:', error);
+    return [];
+  }
+};
+
+/**
+ * Cancel subscription (sets to cancel at end of billing period)
+ * @param {number} userId - User ID
+ * @param {string} reason - Cancellation reason
+ * @returns {Promise<Object>} Cancellation result
+ */
+export const cancelSubscription = async (userId, reason = '') => {
+  try {
+    const user = userId ? { id: userId } : getCurrentUser();
+    if (!user) {
+      throw new Error('User not authenticated');
     }
-  ];
+
+    const subscriptionData = getSubscriptionData(user.id);
+    if (!subscriptionData) {
+      throw new Error('No subscription found');
+    }
+
+    // Set subscription to cancel at end of billing period
+    const updatedSubscription = {
+      ...subscriptionData,
+      status: 'cancelled',
+      autoRenew: false,
+      cancellationDate: new Date().toISOString(),
+      cancellationReason: reason
+    };
+
+    // Add cancellation record to billing history
+    const cancellationRecord = {
+      planId: subscriptionData.planId,
+      planName: SUBSCRIPTION_PLANS[subscriptionData.planId]?.name || 'Unknown',
+      amount: 0,
+      currency: 'RM',
+      status: 'cancelled',
+      paymentMethod: 'system',
+      transactionId: `cancel_${Date.now()}`,
+      description: `Subscription cancelled - ${reason || 'No reason provided'}`
+    };
+
+    addBillingRecord(user.id, cancellationRecord);
+
+    if (saveSubscriptionData(updatedSubscription)) {
+      return {
+        success: true,
+        message: 'Subscription cancelled successfully. Access will continue until the end of your billing period.',
+        subscription: updatedSubscription
+      };
+    } else {
+      throw new Error('Failed to save cancellation data');
+    }
+  } catch (error) {
+    console.error('Error cancelling subscription:', error);
+    return {
+      success: false,
+      message: 'Failed to cancel subscription. Please try again.',
+      error: error.message
+    };
+  }
+};
+
+/**
+ * Reactivate cancelled subscription
+ * @param {number} userId - User ID
+ * @returns {Promise<Object>} Reactivation result
+ */
+export const reactivateSubscription = async (userId) => {
+  try {
+    const user = userId ? { id: userId } : getCurrentUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    const subscriptionData = getSubscriptionData(user.id);
+    if (!subscriptionData) {
+      throw new Error('No subscription found');
+    }
+
+    if (subscriptionData.status !== 'cancelled') {
+      throw new Error('Subscription is not cancelled');
+    }
+
+    // Reactivate subscription
+    const updatedSubscription = {
+      ...subscriptionData,
+      status: 'active',
+      autoRenew: true,
+      cancellationDate: null,
+      cancellationReason: null
+    };
+
+    // Add reactivation record to billing history
+    const reactivationRecord = {
+      planId: subscriptionData.planId,
+      planName: SUBSCRIPTION_PLANS[subscriptionData.planId]?.name || 'Unknown',
+      amount: 0,
+      currency: 'RM',
+      status: 'reactivated',
+      paymentMethod: 'system',
+      transactionId: `reactivate_${Date.now()}`,
+      description: 'Subscription reactivated'
+    };
+
+    addBillingRecord(user.id, reactivationRecord);
+
+    if (saveSubscriptionData(updatedSubscription)) {
+      return {
+        success: true,
+        message: 'Subscription reactivated successfully!',
+        subscription: updatedSubscription
+      };
+    } else {
+      throw new Error('Failed to save reactivation data');
+    }
+  } catch (error) {
+    console.error('Error reactivating subscription:', error);
+    return {
+      success: false,
+      message: 'Failed to reactivate subscription. Please try again.',
+      error: error.message
+    };
+  }
+};
+
+/**
+ * Get current subscription status and details
+ * @param {number} userId - User ID (optional, uses current user if not provided)
+ * @returns {Object} Current subscription details
+ */
+export const getCurrentSubscription = (userId = null) => {
+  try {
+    const user = userId ? { id: userId } : getCurrentUser();
+    if (!user) return null;
+
+    const subscriptionData = getSubscriptionData(user.id);
+    if (!subscriptionData) return null;
+
+    const plan = SUBSCRIPTION_PLANS[subscriptionData.planId];
+
+    return {
+      ...subscriptionData,
+      plan: plan,
+      isActive: subscriptionData.status === 'active',
+      isCancelled: subscriptionData.status === 'cancelled',
+      daysUntilExpiry: subscriptionData.endDate ?
+        Math.ceil((new Date(subscriptionData.endDate) - new Date()) / (1000 * 60 * 60 * 24)) : null
+    };
+  } catch (error) {
+    console.error('Error getting current subscription:', error);
+    return null;
+  }
+};
+
+/**
+ * Add payment method to subscription
+ * @param {number} userId - User ID
+ * @param {Object} paymentMethod - Payment method details
+ * @returns {boolean} Success status
+ */
+export const addPaymentMethod = (userId, paymentMethod) => {
+  try {
+    const subscriptionData = getSubscriptionData(userId);
+    if (!subscriptionData) return false;
+
+    const method = {
+      id: Date.now(),
+      ...paymentMethod,
+      addedDate: new Date().toISOString(),
+      isDefault: subscriptionData.paymentMethods.length === 0
+    };
+
+    subscriptionData.paymentMethods.push(method);
+    return saveSubscriptionData(subscriptionData);
+  } catch (error) {
+    console.error('Error adding payment method:', error);
+    return false;
+  }
+};
+
+/**
+ * Remove payment method from subscription
+ * @param {number} userId - User ID
+ * @param {number} paymentMethodId - Payment method ID to remove
+ * @returns {boolean} Success status
+ */
+export const removePaymentMethod = (userId, paymentMethodId) => {
+  try {
+    const subscriptionData = getSubscriptionData(userId);
+    if (!subscriptionData) return false;
+
+    subscriptionData.paymentMethods = subscriptionData.paymentMethods.filter(
+      method => method.id !== paymentMethodId
+    );
+
+    // If removed method was default, set first remaining as default
+    if (subscriptionData.paymentMethods.length > 0) {
+      const hasDefault = subscriptionData.paymentMethods.some(method => method.isDefault);
+      if (!hasDefault) {
+        subscriptionData.paymentMethods[0].isDefault = true;
+      }
+    }
+
+    return saveSubscriptionData(subscriptionData);
+  } catch (error) {
+    console.error('Error removing payment method:', error);
+    return false;
+  }
 };
