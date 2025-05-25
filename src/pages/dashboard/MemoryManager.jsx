@@ -3,6 +3,10 @@ import DashboardLayout from "../../layout/DashboardLayout";
 import {
   getMemoryStatistics,
   getConversations,
+  getConversationsByTopic,
+  getConversationTopicStats,
+  scanAndRemoveDuplicates,
+  findSimilarConversations,
   getUserPreferences,
   saveUserPreference,
   exportMemoryData,
@@ -24,6 +28,8 @@ const MemoryManager = () => {
   // Data states
   const [memoryStats, setMemoryStats] = useState({});
   const [conversations, setConversations] = useState([]);
+  const [conversationsByTopic, setConversationsByTopic] = useState({});
+  const [conversationStats, setConversationStats] = useState({});
   const [preferences, setPreferences] = useState({});
   const [geminiMemory, setGeminiMemory] = useState([]);
   const [rimeMemory, setRimeMemory] = useState([]);
@@ -31,6 +37,12 @@ const MemoryManager = () => {
 
   // Form states
   const [newPreference, setNewPreference] = useState({ key: '', value: '' });
+  const [selectedTopic, setSelectedTopic] = useState('all');
+
+  // Duplicate scanning states
+  const [duplicateReport, setDuplicateReport] = useState(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [similarConversations, setSimilarConversations] = useState([]);
 
   useEffect(() => {
     loadMemoryData();
@@ -54,9 +66,11 @@ const MemoryManager = () => {
       setLoading(true);
       setError(null);
 
-      const [stats, convs, prefs, geminiMem, rimeMem, sharedMem] = await Promise.all([
+      const [stats, convs, convsByTopic, convStats, prefs, geminiMem, rimeMem, sharedMem] = await Promise.all([
         getMemoryStatistics(),
         getConversations(),
+        getConversationsByTopic(),
+        getConversationTopicStats(),
         getUserPreferences(),
         Promise.resolve(getAIMemory('gemini')),
         Promise.resolve(getAIMemory('rime')),
@@ -65,6 +79,8 @@ const MemoryManager = () => {
 
       setMemoryStats(stats);
       setConversations(convs);
+      setConversationsByTopic(convsByTopic);
+      setConversationStats(convStats);
       setPreferences(prefs);
       setGeminiMemory(geminiMem);
       setRimeMemory(rimeMem);
@@ -124,6 +140,36 @@ const MemoryManager = () => {
         setError('Failed to clear memory');
       }
     }
+  };
+
+  const handleScanDuplicates = async () => {
+    try {
+      setIsScanning(true);
+      setError(null);
+
+      console.log('🔍 Starting duplicate scan...');
+      const report = await scanAndRemoveDuplicates();
+      setDuplicateReport(report);
+
+      // Also find similar conversations
+      const similar = await findSimilarConversations();
+      setSimilarConversations(similar);
+
+      // Reload data to reflect changes
+      await loadMemoryData();
+
+      console.log('✅ Duplicate scan completed:', report);
+    } catch (err) {
+      setError('Failed to scan for duplicates');
+      console.error('Error scanning duplicates:', err);
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
+  const handleClearDuplicateReport = () => {
+    setDuplicateReport(null);
+    setSimilarConversations([]);
   };
 
   if (loading) {
@@ -271,81 +317,179 @@ const MemoryManager = () => {
         {/* AI Conversations Tab */}
         {activeTab === 'conversations' && (
           <div className="grid grid-cols-1 gap-6">
-            {/* Auto-Saved Conversations */}
+            {/* Enhanced Conversation Statistics */}
             <div className="card bg-base-100 shadow-lg">
               <div className="card-body">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="card-title">💬 Auto-Saved Conversation History ({conversations.length})</h2>
-                  <button
-                    onClick={loadMemoryData}
-                    className="btn btn-sm btn-outline"
-                    disabled={loading}
-                  >
-                    <span className="material-icons text-sm">refresh</span>
-                    Refresh
-                  </button>
+                  <h2 className="card-title">💬 Smart Conversation Management</h2>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleScanDuplicates}
+                      className={`btn btn-sm btn-primary ${isScanning ? 'loading' : ''}`}
+                      disabled={isScanning}
+                    >
+                      {isScanning ? '🔍' : '🔍 Scan Duplicates'}
+                    </button>
+                    <button
+                      onClick={loadMemoryData}
+                      className="btn btn-sm btn-outline"
+                      disabled={loading}
+                    >
+                      <span className="material-icons text-sm">refresh</span>
+                      Refresh
+                    </button>
+                  </div>
                 </div>
                 <p className="text-sm text-base-content/70 mb-4">
-                  Yunia automatically remembers all your conversations and learns from them
+                  Yunia automatically saves conversations with duplicate detection and topic categorization
                 </p>
 
-                {/* Conversation Statistics */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                {/* Duplicate Scan Results */}
+                {duplicateReport && (
+                  <div className="alert alert-success mb-4">
+                    <span className="material-icons">check_circle</span>
+                    <div>
+                      <h3 className="font-bold">✅ Duplicate Scan Complete!</h3>
+                      <p className="text-sm">
+                        Removed {duplicateReport.duplicatesRemoved} duplicate conversations.
+                        {duplicateReport.uniqueConversations} unique conversations remaining.
+                      </p>
+                    </div>
+                    <button
+                      className="btn btn-sm btn-ghost"
+                      onClick={handleClearDuplicateReport}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+
+                {/* Enhanced Statistics */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                   <div className="stat bg-base-200 rounded-lg">
                     <div className="stat-title">Total Conversations</div>
-                    <div className="stat-value text-lg">{conversations.length}</div>
-                    <div className="stat-desc">Auto-saved chats</div>
+                    <div className="stat-value text-lg">{conversationStats.total || 0}</div>
+                    <div className="stat-desc">Unique conversations</div>
                   </div>
                   <div className="stat bg-base-200 rounded-lg">
-                    <div className="stat-title">Text Chats</div>
-                    <div className="stat-value text-lg">
-                      {conversations.filter(c => c.aiType === 'gemini').length}
-                    </div>
-                    <div className="stat-desc">Gemini conversations</div>
+                    <div className="stat-title">Topics Discussed</div>
+                    <div className="stat-value text-lg">{Object.keys(conversationsByTopic).length}</div>
+                    <div className="stat-desc">Different categories</div>
                   </div>
                   <div className="stat bg-base-200 rounded-lg">
-                    <div className="stat-title">Voice Chats</div>
+                    <div className="stat-title">Merged Conversations</div>
+                    <div className="stat-value text-lg text-warning">{conversationStats.mergedConversations || 0}</div>
+                    <div className="stat-desc">Duplicates prevented</div>
+                  </div>
+                  <div className="stat bg-base-200 rounded-lg">
+                    <div className="stat-title">Text vs Voice</div>
                     <div className="stat-value text-lg">
-                      {conversations.filter(c => c.aiType === 'rime').length}
+                      {conversations.filter(c => c.aiType === 'gemini').length}:{conversations.filter(c => c.aiType === 'rime').length}
                     </div>
-                    <div className="stat-desc">Rime conversations</div>
+                    <div className="stat-desc">Gemini:Rime ratio</div>
                   </div>
                 </div>
 
-                {/* Recent Conversations */}
+                {/* Topic Filter */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                  <button
+                    className={`btn btn-sm ${selectedTopic === 'all' ? 'btn-primary' : 'btn-outline'}`}
+                    onClick={() => setSelectedTopic('all')}
+                  >
+                    All Topics ({conversationStats.total || 0})
+                  </button>
+                  {Object.entries(conversationStats.byTopic || {}).map(([topic, stats]) => (
+                    <button
+                      key={topic}
+                      className={`btn btn-sm ${selectedTopic === topic ? 'btn-primary' : 'btn-outline'}`}
+                      onClick={() => setSelectedTopic(topic)}
+                    >
+                      {topic === 'income' && '💰'}
+                      {topic === 'planner' && '📅'}
+                      {topic === 'weather' && '🌤️'}
+                      {topic === 'health' && '🏥'}
+                      {topic === 'work' && '💼'}
+                      {topic === 'personal' && '👤'}
+                      {topic === 'general' && '💬'}
+                      {topic.charAt(0).toUpperCase() + topic.slice(1)} ({stats.count})
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Conversations by Topic */}
+            <div className="card bg-base-100 shadow-lg">
+              <div className="card-body">
+                <h2 className="card-title">
+                  {selectedTopic === 'all' ? '🗂️ All Conversations' : `📂 ${selectedTopic.charAt(0).toUpperCase() + selectedTopic.slice(1)} Conversations`}
+                </h2>
+
                 <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {conversations.slice(-15).reverse().map(conv => (
-                    <div key={conv.id} className="border border-base-300 rounded-lg p-4 hover:bg-base-50 transition-colors">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-medium text-base">{conv.title || 'Chat Session'}</h3>
-                        <div className="flex gap-2">
-                          <span className="badge badge-sm">
-                            {conv.aiType === 'gemini' ? '💬 Text' : '🎤 Voice'}
+                  {(() => {
+                    const conversationsToShow = selectedTopic === 'all'
+                      ? conversations.slice(-15).reverse()
+                      : (conversationsByTopic[selectedTopic] || []).slice(0, 15);
+
+                    return conversationsToShow.map(conv => (
+                      <div key={conv.id} className="border border-base-300 rounded-lg p-4 hover:bg-base-50 transition-colors">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-medium text-base">{conv.title || 'Chat Session'}</h3>
+                          <div className="flex gap-2">
+                            <span className="badge badge-sm">
+                              {conv.aiType === 'gemini' ? '💬 Text' : '🎤 Voice'}
+                            </span>
+                            {conv.topic && (
+                              <span className="badge badge-sm badge-info">
+                                {conv.topic === 'income' && '💰'}
+                                {conv.topic === 'planner' && '📅'}
+                                {conv.topic === 'weather' && '🌤️'}
+                                {conv.topic === 'health' && '🏥'}
+                                {conv.topic === 'work' && '💼'}
+                                {conv.topic === 'personal' && '👤'}
+                                {conv.topic === 'general' && '💬'}
+                                {conv.topic}
+                              </span>
+                            )}
+                            {conv.type === 'auto_saved' && (
+                              <span className="badge badge-sm badge-success">Auto</span>
+                            )}
+                            {(conv.updatedCount || 0) > 0 && (
+                              <span className="badge badge-sm badge-warning">
+                                Merged {conv.updatedCount}x
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <p className="text-sm text-base-content/70 mb-3 line-clamp-2">
+                          {conv.content || conv.summary || 'Conversation auto-saved'}
+                        </p>
+                        <div className="flex justify-between items-center text-xs text-base-content/50">
+                          <span>
+                            {conv.messageCount ? `${conv.messageCount} messages` : 'Chat session'}
                           </span>
-                          {conv.type === 'auto_saved' && (
-                            <span className="badge badge-sm badge-success">Auto</span>
-                          )}
+                          <span>
+                            {new Date(conv.timestamp).toLocaleString()}
+                          </span>
                         </div>
                       </div>
-                      <p className="text-sm text-base-content/70 mb-3 line-clamp-2">
-                        {conv.content || conv.summary || 'Conversation auto-saved'}
-                      </p>
-                      <div className="flex justify-between items-center text-xs text-base-content/50">
-                        <span>
-                          {conv.messageCount ? `${conv.messageCount} messages` : 'Chat session'}
-                        </span>
-                        <span>
-                          {new Date(conv.timestamp).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                    ));
+                  })()}
+
                   {conversations.length === 0 && (
                     <div className="text-center text-base-content/60 py-12">
                       <span className="material-icons text-6xl mb-4 text-base-content/30">auto_awesome</span>
-                      <h3 className="text-lg font-medium mb-2">Auto-Save Active</h3>
-                      <p className="mb-2">Yunia automatically saves all your conversations</p>
-                      <p className="text-xs">Start chatting and your conversations will appear here</p>
+                      <h3 className="text-lg font-medium mb-2">Smart Auto-Save Active</h3>
+                      <p className="mb-2">Yunia automatically saves conversations with duplicate detection</p>
+                      <p className="text-xs">Start chatting and your conversations will appear here organized by topic</p>
+                    </div>
+                  )}
+
+                  {selectedTopic !== 'all' && (!conversationsByTopic[selectedTopic] || conversationsByTopic[selectedTopic].length === 0) && (
+                    <div className="text-center text-base-content/60 py-8">
+                      <span className="material-icons text-4xl mb-2">topic</span>
+                      <p>No conversations found for "{selectedTopic}" topic</p>
+                      <p className="text-xs">Start a conversation about {selectedTopic} to see it here</p>
                     </div>
                   )}
                 </div>
@@ -541,6 +685,67 @@ const MemoryManager = () => {
         {/* Memory Tools Tab */}
         {activeTab === 'tools' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Duplicate Scanner */}
+            <div className="card bg-base-100 shadow-lg">
+              <div className="card-body">
+                <h2 className="card-title">🔍 Duplicate Scanner</h2>
+                <p className="text-sm text-base-content/70 mb-4">
+                  Scan and remove duplicate conversations automatically
+                </p>
+                <div className="space-y-4">
+                  <button
+                    className={`btn btn-primary w-full ${isScanning ? 'loading' : ''}`}
+                    onClick={handleScanDuplicates}
+                    disabled={isScanning}
+                  >
+                    {isScanning ? '🔍 Scanning...' : '🔍 Scan for Duplicates'}
+                  </button>
+
+                  {duplicateReport && (
+                    <div className="alert alert-success">
+                      <span className="material-icons">check_circle</span>
+                      <div>
+                        <h3 className="font-bold">Scan Complete!</h3>
+                        <div className="text-xs">
+                          <p>📊 Scanned: {duplicateReport.totalScanned} conversations</p>
+                          <p>🔍 Found: {duplicateReport.duplicatesFound} duplicates</p>
+                          <p>🗑️ Removed: {duplicateReport.duplicatesRemoved} duplicates</p>
+                          <p>✅ Remaining: {duplicateReport.uniqueConversations} unique conversations</p>
+                        </div>
+                      </div>
+                      <button
+                        className="btn btn-sm btn-ghost"
+                        onClick={handleClearDuplicateReport}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+
+                  {duplicateReport && duplicateReport.duplicateDetails.length > 0 && (
+                    <div className="collapse collapse-arrow bg-base-200">
+                      <input type="checkbox" />
+                      <div className="collapse-title text-sm font-medium">
+                        📋 View Duplicate Details ({duplicateReport.duplicateDetails.length})
+                      </div>
+                      <div className="collapse-content">
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                          {duplicateReport.duplicateDetails.map((detail, index) => (
+                            <div key={index} className="border border-base-300 rounded p-2 text-xs">
+                              <p className="font-medium text-error">🗑️ Removed: {detail.duplicate.title}</p>
+                              <p className="text-base-content/60">ID: {detail.duplicate.id} | Topic: {detail.duplicate.topic}</p>
+                              <p className="font-medium text-success">✅ Kept: {detail.original.title}</p>
+                              <p className="text-base-content/60">ID: {detail.original.id} | Topic: {detail.original.topic}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* Memory Management */}
             <div className="card bg-base-100 shadow-lg">
               <div className="card-body">
