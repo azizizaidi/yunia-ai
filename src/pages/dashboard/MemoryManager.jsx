@@ -15,6 +15,7 @@ import {
   getSharedMemory
 } from "../../services/api";
 import Loader from "../../components/ui/Loader";
+import PolarChart from "../../components/ui/PolarChart";
 
 /**
  * Memory Manager - AI Memory Storage System
@@ -47,6 +48,8 @@ const MemoryManager = () => {
   useEffect(() => {
     loadMemoryData();
   }, []);
+
+
 
   // Auto-refresh memory data every 10 seconds when on conversations tab
   useEffect(() => {
@@ -91,6 +94,76 @@ const MemoryManager = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Process AI memory data for polar chart visualization
+  const getAILearningChartData = () => {
+    const chartData = [];
+
+    // === REAL DATA ONLY - NO AI HALLUCINATIONS ===
+
+    // Personal Information (actual user messages)
+    const userMessages = geminiMemory.filter(m => m.type === 'user_message').length;
+    if (userMessages > 0) {
+      chartData.push({
+        label: '👤 Personal Info',
+        value: userMessages
+      });
+    }
+
+    // AI Responses (actual AI responses)
+    const aiResponses = [...geminiMemory, ...rimeMemory].filter(m => m.type === 'ai_response').length;
+    if (aiResponses > 0) {
+      chartData.push({
+        label: '🤖 AI Responses',
+        value: aiResponses
+      });
+    }
+
+    // User Preferences (actual saved preferences)
+    const preferencesCount = Object.keys(preferences).length;
+    if (preferencesCount > 0) {
+      chartData.push({
+        label: '⚙️ Preferences',
+        value: preferencesCount
+      });
+    }
+
+    // Conversations (actual saved conversations)
+    const conversationsCount = conversations.length;
+    if (conversationsCount > 0) {
+      chartData.push({
+        label: '💬 Conversations',
+        value: conversationsCount
+      });
+    }
+
+    // === TOPIC-BASED REAL DATA ===
+    const topicCounts = conversationStats.byTopic || {};
+    Object.entries(topicCounts).forEach(([topic, stats]) => {
+      if (stats.count > 0) {
+        const topicEmojis = {
+          income: '💰',
+          planner: '📅',
+          weather: '🌤️',
+          health: '🏥',
+          work: '💼',
+          personal: '👤',
+          general: '💬'
+        };
+        chartData.push({
+          label: `${topicEmojis[topic] || '📂'} ${topic.charAt(0).toUpperCase() + topic.slice(1)} Topics`,
+          value: stats.count
+        });
+      }
+    });
+
+    // If no real data available, return empty array
+    if (chartData.length === 0) {
+      return [];
+    }
+
+    return chartData;
   };
 
 
@@ -185,10 +258,10 @@ const MemoryManager = () => {
   return (
     <DashboardLayout>
       <div className="p-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">🧠 Memory Manager</h1>
-          <p className="text-base-content/70">
-            Manage how Yunia AI learns and remembers information about you
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold mb-3 text-gray-800">Memory Manager</h1>
+          <p className="text-gray-600 text-base leading-relaxed">
+            Manage how Yunia learns and remembers your preferences and conversations
           </p>
         </div>
 
@@ -206,107 +279,143 @@ const MemoryManager = () => {
         )}
 
         {/* Tab Navigation */}
-        <div className="tabs tabs-boxed justify-center mb-6">
-          {[
-            { id: 'overview', label: '📊 Overview', icon: 'dashboard' },
-            { id: 'conversations', label: '💬 AI Conversations', icon: 'chat' },
-            { id: 'learning', label: '🎯 AI Learning', icon: 'psychology' },
-            { id: 'preferences', label: '⚙️ User Preferences', icon: 'settings' },
-            { id: 'tools', label: '🛠️ Memory Tools', icon: 'build' }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              className={`tab ${activeTab === tab.id ? 'tab-active' : ''}`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              <span className="material-icons mr-2">{tab.icon}</span>
-              {tab.label}
-            </button>
-          ))}
+        <div className="border-b border-gray-200 mb-8">
+          <nav className="flex space-x-8">
+            {[
+              { id: 'overview', label: 'Overview', icon: 'dashboard' },
+              { id: 'conversations', label: 'Conversations', icon: 'chat' },
+              { id: 'learning', label: 'Learning Analytics', icon: 'psychology' },
+              { id: 'preferences', label: 'Preferences', icon: 'settings' },
+              { id: 'tools', label: 'Tools', icon: 'build' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === tab.id
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                <span className="material-icons text-sm mr-2 align-middle">{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
+          </nav>
         </div>
 
         {/* Tab Content */}
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* AI Memory Statistics */}
-            <div className="card bg-base-100 shadow-lg">
-              <div className="card-body">
-                <h2 className="card-title">🧠 AI Memory Statistics</h2>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Total Conversations:</span>
-                    <span className="font-bold">{memoryStats.totalConversations || 0}</span>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Memory Statistics */}
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Memory Statistics</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Conversations</span>
+                    <span className="font-semibold text-gray-900">{memoryStats.totalConversations || 0}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>User Preferences:</span>
-                    <span className="font-bold">{memoryStats.totalPreferences || 0}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Preferences</span>
+                    <span className="font-semibold text-gray-900">{memoryStats.totalPreferences || 0}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>AI Memory Items:</span>
-                    <span className="font-bold text-primary">{memoryStats.totalMemoryItems || 0}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Memory Items</span>
+                    <span className="font-semibold text-blue-600">{memoryStats.totalMemoryItems || 0}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Learning Categories:</span>
-                    <span className="font-bold text-secondary">{(geminiMemory.length + rimeMemory.length) || 0}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Learning Data</span>
+                    <span className="font-semibold text-green-600">{(geminiMemory.length + rimeMemory.length) || 0}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Memory Storage:</span>
-                    <span className="font-bold text-accent">Active</span>
+                  <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                    <span className="text-gray-600">Status</span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      Active
+                    </span>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Memory Actions */}
-            <div className="card bg-base-100 shadow-lg">
-              <div className="card-body">
-                <h2 className="card-title">⚡ Memory Actions</h2>
-                <div className="space-y-2">
+              {/* Quick Actions */}
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+                <div className="space-y-3">
                   <button
-                    className="btn btn-primary btn-sm w-full"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
                     onClick={() => setActiveTab('learning')}
                   >
-                    🎯 View AI Learning
+                    View Learning Analytics
                   </button>
                   <button
-                    className="btn btn-secondary btn-sm w-full"
+                    className="w-full bg-gray-600 hover:bg-gray-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
                     onClick={handleExportData}
                   >
-                    📤 Export Memory Data
+                    Export Memory Data
                   </button>
                   <button
-                    className="btn btn-error btn-sm w-full"
+                    className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
                     onClick={handleClearAllMemory}
                   >
-                    🗑️ Clear AI Memory
+                    Clear All Memory
                   </button>
                 </div>
               </div>
-            </div>
 
-            {/* AI Learning Status */}
-            <div className="card bg-base-100 shadow-lg">
-              <div className="card-body">
-                <h2 className="card-title">🤖 AI Learning Status</h2>
-                <div className="space-y-3">
+              {/* Learning Status */}
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Learning Status</h3>
+                <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">Personal Info</span>
-                    <div className="badge badge-success">Learning</div>
+                    <span className="text-gray-600">Personal Information</span>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      geminiMemory.filter(m => m.type === 'user_message').length > 0
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {geminiMemory.filter(m => m.type === 'user_message').length > 0 ? 'Learning' : 'Waiting'}
+                    </span>
                   </div>
+
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">Preferences</span>
-                    <div className="badge badge-success">Active</div>
+                    <span className="text-gray-600">Preferences ({Object.keys(preferences).length})</span>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      Object.keys(preferences).length > 0
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {Object.keys(preferences).length > 0 ? 'Active' : 'None'}
+                    </span>
                   </div>
+
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">Conversation Style</span>
-                    <div className="badge badge-warning">Adapting</div>
+                    <span className="text-gray-600">Communication Style</span>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      geminiMemory.length > 10 ? 'bg-green-100 text-green-800' :
+                      geminiMemory.length > 3 ? 'bg-yellow-100 text-yellow-800' :
+                      geminiMemory.length > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {geminiMemory.length > 10 ? 'Adapted' :
+                       geminiMemory.length > 3 ? 'Adapting' :
+                       geminiMemory.length > 0 ? 'Learning' : 'Waiting'}
+                    </span>
                   </div>
+
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">Goals & Habits</span>
-                    <div className="badge badge-info">Tracking</div>
+                    <span className="text-gray-600">Memory Storage</span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {geminiMemory.length + rimeMemory.length} items
+                    </span>
                   </div>
-                  <div className="text-xs text-base-content/60 mt-3">
-                    Last updated: {new Date().toLocaleString()}
+
+                  <div className="text-xs text-gray-500 mt-4 pt-4 border-t border-gray-100">
+                    {(geminiMemory.length > 0 || rimeMemory.length > 0) ?
+                      `Last interaction: ${new Date(Math.max(
+                        ...geminiMemory.map(m => new Date(m.timestamp)),
+                        ...rimeMemory.map(m => new Date(m.timestamp))
+                      )).toLocaleString()}` :
+                      'No interactions yet - start chatting to begin learning'
+                    }
                   </div>
                 </div>
               </div>
@@ -500,183 +609,192 @@ const MemoryManager = () => {
 
         {/* AI Learning Tab */}
         {activeTab === 'learning' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* AI Learning Categories */}
-            <div className="card bg-base-100 shadow-lg">
-              <div className="card-body">
-                <h2 className="card-title">🎯 AI Learning Categories</h2>
-                <p className="text-sm text-base-content/70 mb-4">
-                  What Yunia is learning about you
+          <div className="space-y-8">
+            {/* Check if there's any AI memory data */}
+            {(geminiMemory.length === 0 && rimeMemory.length === 0) ? (
+              <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+                <div className="text-5xl mb-6">🤖</div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-3">No Learning Data Yet</h2>
+                <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                  Start chatting with Yunia to begin the learning process. Your conversations will help Yunia understand your preferences and provide better assistance.
                 </p>
-                <div className="space-y-3">
-                  <div className="border border-base-300 rounded-lg p-3">
-                    <div className="flex justify-between items-center mb-2">
-                      <h3 className="font-medium">👤 Personal Information</h3>
-                      <span className="badge badge-success">Active</span>
-                    </div>
-                    <p className="text-sm text-base-content/70">
-                      Name, preferences, habits, and personal details
+                <button
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors"
+                  onClick={() => window.location.href = '/dashboard/ai-chat'}
+                >
+                  Start Chatting with Yunia
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                {/* AI Learning Analytics */}
+                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                  <div className="mb-6">
+                    <h2 className="text-xl font-semibold text-gray-900 mb-2">Learning Analytics</h2>
+                    <p className="text-gray-600">
+                      Live overview of Yunia's learning from your interactions and conversations
                     </p>
                   </div>
+                  <PolarChart
+                    data={getAILearningChartData()}
+                    title="Learning Progress"
+                  />
+                  <div className="mt-6 pt-4 border-t border-gray-100">
+                    <p className="text-sm text-gray-500 mb-3">
+                      Real-time data from chat interactions, memory usage, and user preferences
+                    </p>
+                    <button
+                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+                      onClick={() => {
+                        loadMemoryData();
+                      }}
+                    >
+                      Refresh Data
+                    </button>
+                  </div>
+                </div>
 
-                  <div className="border border-base-300 rounded-lg p-3">
-                    <div className="flex justify-between items-center mb-2">
-                      <h3 className="font-medium">💼 Work & Goals</h3>
-                      <span className="badge badge-warning">Learning</span>
-                    </div>
-                    <p className="text-sm text-base-content/70">
-                      Career goals, work patterns, and professional preferences
+                {/* Learning Categories */}
+                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                  <div className="mb-6">
+                    <h2 className="text-xl font-semibold text-gray-900 mb-2">Learning Categories</h2>
+                    <p className="text-gray-600">
+                      What Yunia has learned from {geminiMemory.length + rimeMemory.length} interactions
                     </p>
                   </div>
+                  <div className="space-y-4">
+                    {/* Personal Information */}
+                    {geminiMemory.some(m => m.type === 'user_message' || m.type === 'ai_response') && (
+                      <div className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <h3 className="font-medium text-gray-900">Personal Information</h3>
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Active
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          Learning from {geminiMemory.filter(m => m.type === 'user_message').length} user messages
+                        </p>
+                      </div>
+                    )}
 
-                  <div className="border border-base-300 rounded-lg p-3">
-                    <div className="flex justify-between items-center mb-2">
-                      <h3 className="font-medium">🗣️ Communication Style</h3>
-                      <span className="badge badge-info">Adapting</span>
-                    </div>
-                    <p className="text-sm text-base-content/70">
-                      How you prefer to communicate and receive information
-                    </p>
-                  </div>
+                    {/* Communication Style */}
+                    {(geminiMemory.length > 0 || rimeMemory.length > 0) && (
+                      <div className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <h3 className="font-medium text-gray-900">Communication Style</h3>
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {geminiMemory.length > 5 ? 'Adapting' : 'Learning'}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          Analyzing patterns from {geminiMemory.length} text interactions
+                          {rimeMemory.length > 0 && ` and ${rimeMemory.length} voice interactions`}
+                        </p>
+                      </div>
+                    )}
 
-                  <div className="border border-base-300 rounded-lg p-3">
-                    <div className="flex justify-between items-center mb-2">
-                      <h3 className="font-medium">📍 Context & Environment</h3>
-                      <span className="badge badge-secondary">Tracking</span>
-                    </div>
-                    <p className="text-sm text-base-content/70">
-                      Location patterns, schedule, and environmental preferences
-                    </p>
+                    {/* User Preferences */}
+                    {Object.keys(preferences).length > 0 && (
+                      <div className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <h3 className="font-medium text-gray-900">User Preferences</h3>
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Active
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          {Object.keys(preferences).length} preferences configured
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Memory Insights */}
-            <div className="card bg-base-100 shadow-lg">
-              <div className="card-body">
-                <h2 className="card-title">🧠 Memory Insights</h2>
-                <p className="text-sm text-base-content/70 mb-4">
-                  What Yunia has learned about you recently
-                </p>
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  <div className="border border-base-300 rounded-lg p-3">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-medium">Communication Preference</h3>
-                      <span className="badge badge-sm badge-info">Recent</span>
-                    </div>
-                    <p className="text-sm text-base-content/70 mb-2">
-                      Prefers direct, concise communication style
-                    </p>
-                    <div className="text-xs text-base-content/50">
-                      Learned: {new Date().toLocaleDateString()}
-                    </div>
-                  </div>
-
-                  <div className="border border-base-300 rounded-lg p-3">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-medium">Work Schedule</h3>
-                      <span className="badge badge-sm badge-success">Confirmed</span>
-                    </div>
-                    <p className="text-sm text-base-content/70 mb-2">
-                      Most active during morning hours (9 AM - 12 PM)
-                    </p>
-                    <div className="text-xs text-base-content/50">
-                      Pattern identified: {new Date().toLocaleDateString()}
-                    </div>
-                  </div>
-
-                  <div className="border border-base-300 rounded-lg p-3">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-medium">Project Focus</h3>
-                      <span className="badge badge-sm badge-warning">Learning</span>
-                    </div>
-                    <p className="text-sm text-base-content/70 mb-2">
-                      Currently working on Yunia AI development project
-                    </p>
-                    <div className="text-xs text-base-content/50">
-                      Context updated: {new Date().toLocaleDateString()}
-                    </div>
-                  </div>
-
-                  {(geminiMemory.length === 0 && rimeMemory.length === 0) && (
-                    <div className="text-center text-base-content/60 py-8">
-                      <span className="material-icons text-4xl mb-2">psychology</span>
-                      <p>Yunia is still learning about you</p>
-                      <p className="text-xs">Insights will appear as you interact more</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         )}
 
         {/* Preferences Tab */}
         {activeTab === 'preferences' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Add New Preference */}
-            <div className="card bg-base-100 shadow-lg">
-              <div className="card-body">
-                <h2 className="card-title">➕ Add New Preference</h2>
-                <form onSubmit={handleSavePreference} className="space-y-4">
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">Preference Key</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered"
-                      placeholder="e.g., theme, language, notifications"
-                      value={newPreference.key}
-                      onChange={(e) => setNewPreference({...newPreference, key: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">Value</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered"
-                      placeholder="e.g., dark, english, enabled"
-                      value={newPreference.value}
-                      onChange={(e) => setNewPreference({...newPreference, value: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <button type="submit" className="btn btn-primary w-full">
-                    ⚙️ Save Preference
-                  </button>
-                </form>
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">Add Personal Preference</h2>
+                <p className="text-gray-600">
+                  Tell Yunia about your personal preferences so it can understand you better and provide more personalized responses.
+                </p>
               </div>
+              <form onSubmit={handleSavePreference} className="space-y-5">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Preference Key
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="e.g., favorite_color, communication_style, hobby"
+                    value={newPreference.key}
+                    onChange={(e) => setNewPreference({...newPreference, key: e.target.value})}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Value
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="e.g., blue, direct and concise, reading books"
+                    value={newPreference.value}
+                    onChange={(e) => setNewPreference({...newPreference, value: e.target.value})}
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+                >
+                  Save Preference
+                </button>
+              </form>
             </div>
 
             {/* Preferences List */}
-            <div className="card bg-base-100 shadow-lg">
-              <div className="card-body">
-                <h2 className="card-title">⚙️ Your Preferences ({Object.keys(preferences).length})</h2>
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {Object.entries(preferences).map(([key, value]) => (
-                    <div key={key} className="border border-base-300 rounded-lg p-3">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <h3 className="font-medium">{key}</h3>
-                          <p className="text-sm text-base-content/70">
-                            {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                          </p>
-                        </div>
-                        <span className="badge badge-outline">
-                          {typeof value}
-                        </span>
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                  Your Preferences ({Object.keys(preferences).length})
+                </h2>
+                <p className="text-gray-600">
+                  What Yunia knows about your personal preferences and characteristics.
+                </p>
+              </div>
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {Object.entries(preferences).map(([key, value]) => (
+                  <div key={key} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h3 className="font-medium text-gray-900 mb-1">{key}</h3>
+                        <p className="text-sm text-gray-600">
+                          {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                        </p>
                       </div>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 ml-3">
+                        {typeof value}
+                      </span>
                     </div>
-                  ))}
-                  {Object.keys(preferences).length === 0 && (
-                    <p className="text-center text-base-content/60">No preferences set yet</p>
-                  )}
-                </div>
+                  </div>
+                ))}
+                {Object.keys(preferences).length === 0 && (
+                  <div className="text-center py-8">
+                    <div className="text-gray-400 text-4xl mb-3">⚙️</div>
+                    <p className="text-gray-500">No preferences added yet</p>
+                    <p className="text-sm text-gray-400 mt-1">Start by telling Yunia about yourself!</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
