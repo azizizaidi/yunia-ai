@@ -1,17 +1,16 @@
 import { useState, useEffect } from "react";
-import DashboardLayout from "../layout/DashboardLayout";
+import DashboardLayout from "../../layout/DashboardLayout";
 import {
   getMemoryStatistics,
   getConversations,
   getUserPreferences,
-  saveConversation,
   saveUserPreference,
   exportMemoryData,
   clearAllUserMemory,
   getAIMemory,
   getSharedMemory
-} from "../services/api";
-import Loader from "../components/ui/Loader";
+} from "../../services/api";
+import Loader from "../../components/ui/Loader";
 
 /**
  * Memory Manager - AI Memory Storage System
@@ -31,12 +30,24 @@ const MemoryManager = () => {
   const [sharedMemory, setSharedMemory] = useState({});
 
   // Form states
-  const [newConversation, setNewConversation] = useState({ title: '', content: '', aiType: 'gemini' });
   const [newPreference, setNewPreference] = useState({ key: '', value: '' });
 
   useEffect(() => {
     loadMemoryData();
   }, []);
+
+  // Auto-refresh memory data every 10 seconds when on conversations tab
+  useEffect(() => {
+    let interval;
+    if (activeTab === 'conversations') {
+      interval = setInterval(() => {
+        loadMemoryData();
+      }, 10000); // Refresh every 10 seconds
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [activeTab]);
 
   const loadMemoryData = async () => {
     try {
@@ -66,22 +77,7 @@ const MemoryManager = () => {
     }
   };
 
-  const handleSaveConversation = async (e) => {
-    e.preventDefault();
-    try {
-      await saveConversation({
-        title: newConversation.title,
-        content: newConversation.content,
-        aiType: newConversation.aiType,
-        type: 'user_created'
-      });
 
-      setNewConversation({ title: '', content: '', aiType: 'gemini' });
-      await loadMemoryData();
-    } catch (err) {
-      setError('Failed to save conversation');
-    }
-  };
 
   const handleSavePreference = async (e) => {
     e.preventDefault();
@@ -274,88 +270,82 @@ const MemoryManager = () => {
 
         {/* AI Conversations Tab */}
         {activeTab === 'conversations' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Add New Conversation Memory */}
+          <div className="grid grid-cols-1 gap-6">
+            {/* Auto-Saved Conversations */}
             <div className="card bg-base-100 shadow-lg">
               <div className="card-body">
-                <h2 className="card-title">➕ Add Conversation Memory</h2>
-                <p className="text-sm text-base-content/70 mb-4">
-                  Save important conversations for Yunia to remember
-                </p>
-                <form onSubmit={handleSaveConversation} className="space-y-4">
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">Conversation Topic</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered"
-                      placeholder="e.g., Discussion about work preferences"
-                      value={newConversation.title}
-                      onChange={(e) => setNewConversation({...newConversation, title: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">Key Information</span>
-                    </label>
-                    <textarea
-                      className="textarea textarea-bordered"
-                      rows="3"
-                      placeholder="What should Yunia remember from this conversation?"
-                      value={newConversation.content}
-                      onChange={(e) => setNewConversation({...newConversation, content: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">AI Mode</span>
-                    </label>
-                    <select
-                      className="select select-bordered"
-                      value={newConversation.aiType}
-                      onChange={(e) => setNewConversation({...newConversation, aiType: e.target.value})}
-                    >
-                      <option value="gemini">Yunia (Text Chat)</option>
-                      <option value="rime">Yunia (Voice Assistant)</option>
-                    </select>
-                  </div>
-                  <button type="submit" className="btn btn-primary w-full">
-                    💾 Save to Memory
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="card-title">💬 Auto-Saved Conversation History ({conversations.length})</h2>
+                  <button
+                    onClick={loadMemoryData}
+                    className="btn btn-sm btn-outline"
+                    disabled={loading}
+                  >
+                    <span className="material-icons text-sm">refresh</span>
+                    Refresh
                   </button>
-                </form>
-              </div>
-            </div>
-
-            {/* Saved Conversations */}
-            <div className="card bg-base-100 shadow-lg">
-              <div className="card-body">
-                <h2 className="card-title">💬 Saved Conversation Memories ({conversations.length})</h2>
+                </div>
                 <p className="text-sm text-base-content/70 mb-4">
-                  Important conversations Yunia remembers about you
+                  Yunia automatically remembers all your conversations and learns from them
                 </p>
+
+                {/* Conversation Statistics */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="stat bg-base-200 rounded-lg">
+                    <div className="stat-title">Total Conversations</div>
+                    <div className="stat-value text-lg">{conversations.length}</div>
+                    <div className="stat-desc">Auto-saved chats</div>
+                  </div>
+                  <div className="stat bg-base-200 rounded-lg">
+                    <div className="stat-title">Text Chats</div>
+                    <div className="stat-value text-lg">
+                      {conversations.filter(c => c.aiType === 'gemini').length}
+                    </div>
+                    <div className="stat-desc">Gemini conversations</div>
+                  </div>
+                  <div className="stat bg-base-200 rounded-lg">
+                    <div className="stat-title">Voice Chats</div>
+                    <div className="stat-value text-lg">
+                      {conversations.filter(c => c.aiType === 'rime').length}
+                    </div>
+                    <div className="stat-desc">Rime conversations</div>
+                  </div>
+                </div>
+
+                {/* Recent Conversations */}
                 <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {conversations.slice(-10).reverse().map(conv => (
-                    <div key={conv.id} className="border border-base-300 rounded-lg p-3">
+                  {conversations.slice(-15).reverse().map(conv => (
+                    <div key={conv.id} className="border border-base-300 rounded-lg p-4 hover:bg-base-50 transition-colors">
                       <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-medium">{conv.title}</h3>
-                        <span className="badge badge-sm">
-                          {conv.aiType === 'gemini' ? '💬 Text' : '🎤 Voice'}
-                        </span>
+                        <h3 className="font-medium text-base">{conv.title || 'Chat Session'}</h3>
+                        <div className="flex gap-2">
+                          <span className="badge badge-sm">
+                            {conv.aiType === 'gemini' ? '💬 Text' : '🎤 Voice'}
+                          </span>
+                          {conv.type === 'auto_saved' && (
+                            <span className="badge badge-sm badge-success">Auto</span>
+                          )}
+                        </div>
                       </div>
-                      <p className="text-sm text-base-content/70 mb-2">{conv.content}</p>
-                      <div className="text-xs text-base-content/50">
-                        Saved: {new Date(conv.timestamp).toLocaleString()}
+                      <p className="text-sm text-base-content/70 mb-3 line-clamp-2">
+                        {conv.content || conv.summary || 'Conversation auto-saved'}
+                      </p>
+                      <div className="flex justify-between items-center text-xs text-base-content/50">
+                        <span>
+                          {conv.messageCount ? `${conv.messageCount} messages` : 'Chat session'}
+                        </span>
+                        <span>
+                          {new Date(conv.timestamp).toLocaleString()}
+                        </span>
                       </div>
                     </div>
                   ))}
                   {conversations.length === 0 && (
-                    <div className="text-center text-base-content/60 py-8">
-                      <span className="material-icons text-4xl mb-2">chat_bubble_outline</span>
-                      <p>No conversation memories saved yet</p>
-                      <p className="text-xs">Add important conversations for Yunia to remember</p>
+                    <div className="text-center text-base-content/60 py-12">
+                      <span className="material-icons text-6xl mb-4 text-base-content/30">auto_awesome</span>
+                      <h3 className="text-lg font-medium mb-2">Auto-Save Active</h3>
+                      <p className="mb-2">Yunia automatically saves all your conversations</p>
+                      <p className="text-xs">Start chatting and your conversations will appear here</p>
                     </div>
                   )}
                 </div>

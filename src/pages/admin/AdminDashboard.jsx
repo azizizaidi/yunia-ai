@@ -1,9 +1,9 @@
 // src/pages/AdminDashboard.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { logoutUser, getUserStats, getSystemSettings } from "../services/api";
-import useAuth from "../hooks/useAuth";
-import Loader from "../components/ui/Loader";
+import { logoutUser, getUserStats, getSystemSettings } from "../../services/api";
+import useAuth from "../../hooks/useAuth";
+import Loader from "../../components/ui/Loader";
 
 /**
  * Admin Dashboard page component

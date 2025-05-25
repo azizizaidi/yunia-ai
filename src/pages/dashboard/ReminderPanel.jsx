@@ -1,4 +1,4 @@
-import DashboardLayout from "../layout/DashboardLayout";
+import DashboardLayout from "../../layout/DashboardLayout";
 
 /**
  * ReminderPanel page - Smart reminder management system
@@ -27,7 +27,7 @@ const ReminderPanel = () => {
             <p className="text-base-content/70 mb-6">
               Our AI-powered reminder system will feature:
             </p>
-            
+
             <div className="grid md:grid-cols-2 gap-4 mb-6">
               <div className="flex items-center space-x-3">
                 <span className="material-icons text-success">smart_toy</span>

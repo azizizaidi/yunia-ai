@@ -1,12 +1,14 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
-import MemoryManager from "./pages/MemoryManager";
-import HabitTracker from "./pages/HabitTracker";
-import DailyBriefings from "./pages/DailyBriefings";
-import ReminderPanel from "./pages/ReminderPanel";
-import Subscription from "./pages/Subscription";
+import { Login, Register } from "./pages/auth";
+import { AdminLogin, AdminDashboard } from "./pages/admin";
+import {
+  Dashboard,
+  MemoryManager,
+  HabitTracker,
+  DailyBriefings,
+  ReminderPanel,
+  Subscription
+} from "./pages/dashboard";
 import {
   TaskManager,
   GoogleCalendar,
@@ -19,10 +21,7 @@ import {
   Analytics,
   ChatHistory
 } from "./pages/ComingSoonPages";
-import AdminLogin from "./pages/AdminLogin";
-import AdminDashboard from "./pages/AdminDashboard";
-import PublicRoute from "./components/auth/PublicRoute";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
+import { PublicRoute, ProtectedRoute } from "./components/auth";
 // import { AIMemoryProvider } from "./context/AIMemoryContext";
 
 function App() {

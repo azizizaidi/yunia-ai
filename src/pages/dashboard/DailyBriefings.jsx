@@ -1,4 +1,4 @@
-import DashboardLayout from "../layout/DashboardLayout";
+import DashboardLayout from "../../layout/DashboardLayout";
 
 /**
  * DailyBriefings page - AI-generated daily briefings and summaries
@@ -27,7 +27,7 @@ const DailyBriefings = () => {
             <p className="text-base-content/70 mb-6">
               Your personalized AI assistant will provide daily briefings including:
             </p>
-            
+
             <div className="grid md:grid-cols-2 gap-4 mb-6">
               <div className="flex items-center space-x-3">
                 <span className="material-icons text-info">wb_sunny</span>

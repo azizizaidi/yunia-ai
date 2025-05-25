@@ -1,4 +1,4 @@
-import DashboardLayout from "../layout/DashboardLayout";
+import DashboardLayout from "../../layout/DashboardLayout";
 
 /**
  * HabitTracker page - Track daily habits and routines
@@ -27,7 +27,7 @@ const HabitTracker = () => {
             <p className="text-base-content/70 mb-6">
               We're building an intelligent habit tracking system that will help you:
             </p>
-            
+
             <div className="grid md:grid-cols-2 gap-4 mb-6">
               <div className="flex items-center space-x-3">
                 <span className="material-icons text-success">check_circle</span>

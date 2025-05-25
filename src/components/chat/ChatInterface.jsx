@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "re
 import ChatMessage from "./ChatMessage";
 import VoiceInput from "./VoiceInput";
 import { sendMessageToGemini } from "../../services/geminiApi";
+import { saveConversation, saveAIMemory } from "../../services/api";
 
 /**
  * ChatInterface component - Main chat interface with message history and input
@@ -46,6 +47,47 @@ const ChatInterface = forwardRef(({ initialMessages = [] }, ref) => {
     localStorage.setItem('chatMessages', JSON.stringify(messages));
   }, [messages]);
 
+  // Auto-save conversation to memory when conversation reaches certain length
+  useEffect(() => {
+    const autoSaveConversation = async () => {
+      // Auto-save more frequently - every 2 messages after initial message
+      if (messages.length >= 3 && messages.length % 2 === 1) { // Every 2 messages (odd numbers)
+        try {
+          const conversationSummary = generateConversationSummary(messages);
+          const lastUserMessage = messages.filter(m => m.role === 'user').slice(-1)[0];
+          const lastAIMessage = messages.filter(m => m.role === 'assistant').slice(-1)[0];
+
+          await saveConversation({
+            title: conversationSummary.title,
+            content: conversationSummary.summary,
+            summary: conversationSummary.keyPoints,
+            aiType: 'gemini',
+            type: 'auto_saved',
+            messageCount: messages.length,
+            lastUserMessage: lastUserMessage?.content || '',
+            lastAIMessage: lastAIMessage?.content || ''
+          });
+
+          // Also save to AI memory for learning
+          await saveAIMemory('gemini', {
+            type: 'conversation_summary',
+            summary: conversationSummary.summary,
+            keyPoints: conversationSummary.keyPoints,
+            messageCount: messages.length,
+            conversationContext: conversationSummary.context
+          });
+
+          console.log('Conversation auto-saved to memory:', conversationSummary.title);
+
+        } catch (error) {
+          console.error('Error auto-saving conversation:', error);
+        }
+      }
+    };
+
+    autoSaveConversation();
+  }, [messages]);
+
   // Focus input on component mount
   useEffect(() => {
     if (inputRef.current) {
@@ -77,6 +119,18 @@ const ChatInterface = forwardRef(({ initialMessages = [] }, ref) => {
     setInputMessage("");
     setIsLoading(true);
 
+    // Immediately save user message to AI memory
+    try {
+      await saveAIMemory('gemini', {
+        type: 'user_message',
+        message: userMessage.content,
+        timestamp: userMessage.timestamp,
+        messageId: userMessage.id
+      });
+    } catch (error) {
+      console.error('Error saving user message to memory:', error);
+    }
+
     // Call the Gemini API for a response
     try {
       // Get all messages for context (or just the last few if there are many)
@@ -90,6 +144,19 @@ const ChatInterface = forwardRef(({ initialMessages = [] }, ref) => {
 
       // Add the AI response to the chat
       setMessages((prev) => [...prev, aiResponse]);
+
+      // Immediately save AI response to memory
+      try {
+        await saveAIMemory('gemini', {
+          type: 'ai_response',
+          message: aiResponse.content,
+          timestamp: aiResponse.timestamp,
+          messageId: aiResponse.id,
+          aiName: 'Yunia'
+        });
+      } catch (error) {
+        console.error('Error saving AI response to memory:', error);
+      }
     } catch (error) {
       console.error("Error getting AI response:", error);
       // Add an error message
@@ -124,6 +191,34 @@ const ChatInterface = forwardRef(({ initialMessages = [] }, ref) => {
       // Clear localStorage
       localStorage.removeItem('chatMessages');
     }
+  };
+
+  // Generate conversation summary for auto-save
+  const generateConversationSummary = (messages) => {
+    const userMessages = messages.filter(m => m.role === 'user');
+    const aiMessages = messages.filter(m => m.role === 'assistant');
+
+    // Extract key topics from user messages
+    const recentUserMessages = userMessages.slice(-3);
+    const topics = recentUserMessages.map(m => {
+      const words = m.content.toLowerCase().split(' ');
+      return words.filter(word => word.length > 4).slice(0, 2);
+    }).flat();
+
+    const uniqueTopics = [...new Set(topics)];
+    const mainTopic = uniqueTopics[0] || 'general';
+
+    return {
+      title: `Chat about ${mainTopic}`,
+      summary: `Conversation covering ${uniqueTopics.slice(0, 3).join(', ')} with ${messages.length} messages exchanged.`,
+      keyPoints: recentUserMessages.map(m => m.content.substring(0, 100)).join(' | '),
+      context: {
+        totalMessages: messages.length,
+        userQuestions: userMessages.length,
+        aiResponses: aiMessages.length,
+        topics: uniqueTopics.slice(0, 5)
+      }
+    };
   };
 
   // Expose methods to parent component via ref
@@ -194,7 +289,7 @@ const ChatInterface = forwardRef(({ initialMessages = [] }, ref) => {
         </form>
         <div className="text-xs text-base-content/50 mt-2 text-center">
           <p>Yunia AI can make mistakes. Consider checking important information.</p>
-      
+
         </div>
       </div>
     </div>
