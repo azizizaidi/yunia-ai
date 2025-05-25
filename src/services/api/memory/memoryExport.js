@@ -20,13 +20,13 @@ export const exportMemoryData = async () => {
       exportDate: new Date().toISOString(),
       version: '1.0',
       data: {
-        conversations: getUserData('conversations', []),
-        reminders: getUserData('user_reminders', []),
-        preferences: getUserData('preferences', {}),
-        environmentalData: getUserData('environmental_data', []),
-        sharedMemory: getUserData('shared_memory', {}),
-        aiMemoryGemini: getUserData('ai_memory_gemini', []),
-        aiMemoryRime: getUserData('ai_memory_rime', [])
+        conversations: await getUserData('conversations', []),
+        reminders: await getUserData('user_reminders', []),
+        preferences: await getUserData('preferences', {}),
+        environmentalData: await getUserData('environmental_data', []),
+        sharedMemory: await getUserData('shared_memory', {}),
+        aiMemoryGemini: await getUserData('ai_memory_gemini', []),
+        aiMemoryRime: await getUserData('ai_memory_rime', [])
       }
     };
 
@@ -70,7 +70,7 @@ export const importMemoryData = async (importData, overwrite = false) => {
 
     for (const dataType of dataTypes) {
       totalCount++;
-      
+
       if (data[dataType] !== undefined) {
         let dataToImport = data[dataType];
 
@@ -110,7 +110,7 @@ export const exportAsFile = async () => {
     const jsonString = JSON.stringify(exportData, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    
+
     return url;
   } catch (error) {
     console.error('Error creating export file:', error);

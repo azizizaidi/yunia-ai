@@ -16,10 +16,10 @@ export const getMemoryStatistics = async () => {
     if (!currentUser) return {};
 
     // Get all user data
-    const conversations = getUserData('conversations', []);
-    const reminders = getUserData('user_reminders', []);
-    const preferences = getUserData('preferences', {});
-    const environmentalData = getUserData('environmental_data', []);
+    const conversations = await getUserData('conversations', []);
+    const reminders = await getUserData('user_reminders', []);
+    const preferences = await getUserData('preferences', {});
+    const environmentalData = await getUserData('environmental_data', []);
 
     // Calculate statistics
     const stats = {
@@ -32,7 +32,7 @@ export const getMemoryStatistics = async () => {
       totalReminders: reminders.length,
       activeReminders: reminders.filter(r => r.status === 'active').length,
       completedReminders: reminders.filter(r => r.status === 'completed').length,
-      reminderCompletionRate: reminders.length > 0 
+      reminderCompletionRate: reminders.length > 0
         ? Math.round((reminders.filter(r => r.status === 'completed').length / reminders.length) * 100)
         : 0,
 
@@ -76,7 +76,7 @@ export const getMemoryStatistics = async () => {
  */
 const getConversationsByTopic = (conversations) => {
   const topicCounts = {};
-  
+
   conversations.forEach(conv => {
     const topic = conv.topic || 'general';
     topicCounts[topic] = (topicCounts[topic] || 0) + 1;
@@ -135,7 +135,7 @@ const calculateEngagementScore = (data) => {
 const getLastActivity = (items) => {
   if (items.length === 0) return null;
 
-  const timestamps = items.map(item => 
+  const timestamps = items.map(item =>
     new Date(item.timestamp || item.createdAt || item.date || 0)
   ).filter(date => !isNaN(date.getTime()));
 
@@ -155,10 +155,10 @@ export const getMemoryUsageBreakdown = async () => {
     const currentUser = getCurrentUser();
     if (!currentUser) return {};
 
-    const conversations = getUserData('conversations', []);
-    const reminders = getUserData('user_reminders', []);
-    const preferences = getUserData('preferences', {});
-    const environmentalData = getUserData('environmental_data', []);
+    const conversations = await getUserData('conversations', []);
+    const reminders = await getUserData('user_reminders', []);
+    const preferences = await getUserData('preferences', {});
+    const environmentalData = await getUserData('environmental_data', []);
 
     // Estimate storage usage (rough calculation)
     const conversationSize = JSON.stringify(conversations).length;
@@ -208,10 +208,10 @@ export const getMemoryUsageBreakdown = async () => {
  */
 const formatBytes = (bytes) => {
   if (bytes === 0) return '0 B';
-  
+
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };

@@ -24,7 +24,7 @@ export const saveEnvironmentalData = async (environmentalData) => {
     };
 
     const success = appendToStorageArray('environmental_data', dataPoint, 500);
-    
+
     if (success) {
       return dataPoint;
     } else {
@@ -47,8 +47,8 @@ export const getEnvironmentalData = async (limit = 100) => {
     const currentUser = getCurrentUser();
     if (!currentUser) return [];
 
-    const data = getUserData('environmental_data', []);
-    
+    const data = await getUserData('environmental_data', []);
+
     // Return most recent data points
     return data.slice(-limit).reverse();
   } catch (error) {

@@ -8,7 +8,7 @@ import {
   scanAndRemoveDuplicates,
   findSimilarConversations,
   getUserPreferences,
-  saveUserPreference,
+  saveAILearningPreference,
   exportMemoryData,
   clearAllUserMemory,
   getAIMemory,
@@ -75,9 +75,9 @@ const MemoryManager = () => {
         getConversationsByTopic(),
         getConversationTopicStats(),
         getUserPreferences(),
-        Promise.resolve(getAIMemory('gemini')),
-        Promise.resolve(getAIMemory('rime')),
-        Promise.resolve(getSharedMemory())
+        getAIMemory('gemini'),
+        getAIMemory('rime'),
+        getSharedMemory()
       ]);
 
       setMemoryStats(stats);
@@ -171,7 +171,7 @@ const MemoryManager = () => {
   const handleSavePreference = async (e) => {
     e.preventDefault();
     try {
-      await saveUserPreference(newPreference.key, newPreference.value);
+      await saveAILearningPreference(newPreference.key, newPreference.value);
       setNewPreference({ key: '', value: '' });
       await loadMemoryData();
     } catch (err) {

@@ -220,3 +220,62 @@ export const getConversationsByTopic = async () => {
     return {};
   }
 };
+
+/**
+ * Get conversation topic statistics
+ * @returns {Promise<Object>} Topic statistics object
+ */
+export const getConversationTopicStats = async () => {
+  try {
+    const conversations = await getConversations();
+
+    if (conversations.length === 0) {
+      return {
+        total: 0,
+        byTopic: {},
+        mergedConversations: 0
+      };
+    }
+
+    // Count conversations by topic
+    const topicCounts = {};
+    let mergedCount = 0;
+
+    conversations.forEach(conv => {
+      const topic = conv.topic || 'general';
+
+      if (!topicCounts[topic]) {
+        topicCounts[topic] = {
+          count: 0,
+          conversations: []
+        };
+      }
+
+      topicCounts[topic].count++;
+      topicCounts[topic].conversations.push(conv);
+
+      // Count merged conversations (those with updatedCount > 0)
+      if (conv.updatedCount && conv.updatedCount > 0) {
+        mergedCount++;
+      }
+    });
+
+    return {
+      total: conversations.length,
+      byTopic: topicCounts,
+      mergedConversations: mergedCount,
+      topicDistribution: Object.entries(topicCounts).map(([topic, data]) => ({
+        topic,
+        count: data.count,
+        percentage: Math.round((data.count / conversations.length) * 100)
+      })).sort((a, b) => b.count - a.count)
+    };
+  } catch (error) {
+    console.error('Error getting conversation topic stats:', error);
+    return {
+      total: 0,
+      byTopic: {},
+      mergedConversations: 0
+    };
+  }
+};

@@ -11,13 +11,13 @@ import { getFromStorage, setToStorage } from './storageCore';
  * @param {number} userId - User ID (optional, uses current user if not provided)
  * @returns {string} User-specific key
  */
-export const getUserStorageKey = (key, userId = null) => {
+export const getUserStorageKey = async (key, userId = null) => {
   try {
     if (userId) {
       return `${key}_${userId}`;
     }
 
-    const { getCurrentUser } = require('../auth/authCore');
+    const { getCurrentUser } = await import('../auth/authCore');
     const currentUser = getCurrentUser();
     if (!currentUser) {
       throw new Error('No user authenticated');
@@ -37,9 +37,9 @@ export const getUserStorageKey = (key, userId = null) => {
  * @param {number} userId - User ID (optional)
  * @returns {any} Stored value or default
  */
-export const getUserData = (key, defaultValue = null, userId = null) => {
+export const getUserData = async (key, defaultValue = null, userId = null) => {
   try {
-    const userKey = getUserStorageKey(key, userId);
+    const userKey = await getUserStorageKey(key, userId);
     return getFromStorage(userKey, defaultValue);
   } catch (error) {
     console.error('Error getting user data:', error);
@@ -54,9 +54,9 @@ export const getUserData = (key, defaultValue = null, userId = null) => {
  * @param {number} userId - User ID (optional)
  * @returns {boolean} Success status
  */
-export const setUserData = (key, value, userId = null) => {
+export const setUserData = async (key, value, userId = null) => {
   try {
-    const userKey = getUserStorageKey(key, userId);
+    const userKey = await getUserStorageKey(key, userId);
     return setToStorage(userKey, value);
   } catch (error) {
     console.error('Error setting user data:', error);
@@ -160,9 +160,9 @@ export const searchStorageArray = (key, searchFunction) => {
  * @param {number} userId - User ID (optional)
  * @returns {Object} Storage statistics
  */
-export const getUserStorageStats = (userId = null) => {
+export const getUserStorageStats = async (userId = null) => {
   try {
-    const { getCurrentUser } = require('../auth/authCore');
+    const { getCurrentUser } = await import('../auth/authCore');
     const user = userId ? { id: userId } : getCurrentUser();
     if (!user) return {};
 
@@ -207,10 +207,10 @@ export const getUserStorageStats = (userId = null) => {
  */
 const formatBytes = (bytes) => {
   if (bytes === 0) return '0 B';
-  
+
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };

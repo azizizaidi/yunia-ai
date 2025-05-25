@@ -10,14 +10,14 @@ import { getUserData, setUserData } from '../storage/storageUtils';
  * @param {Object} preferences - User preferences
  * @returns {Promise<Object>} Saved preferences
  */
-export const saveUserPreferences = async (preferences) => {
+export const saveAILearningPreferences = async (preferences) => {
   try {
     const { getCurrentUser } = await import('../auth/authCore');
     const currentUser = getCurrentUser();
     if (!currentUser) throw new Error('User not authenticated');
 
     const existingPreferences = getUserData('preferences', {});
-    
+
     const updatedPreferences = {
       ...existingPreferences,
       ...preferences,
@@ -26,7 +26,7 @@ export const saveUserPreferences = async (preferences) => {
     };
 
     const success = setUserData('preferences', updatedPreferences);
-    
+
     if (success) {
       return updatedPreferences;
     } else {
@@ -39,16 +39,16 @@ export const saveUserPreferences = async (preferences) => {
 };
 
 /**
- * Get user preferences
- * @returns {Promise<Object>} User preferences
+ * Get AI learning preferences
+ * @returns {Promise<Object>} AI learning preferences
  */
-export const getUserPreferences = async () => {
+export const getAILearningPreferences = async () => {
   try {
     const { getCurrentUser } = await import('../auth/authCore');
     const currentUser = getCurrentUser();
     if (!currentUser) return {};
 
-    return getUserData('preferences', {});
+    return await getUserData('preferences', {});
   } catch (error) {
     console.error('Error getting user preferences:', error);
     return {};
@@ -56,20 +56,30 @@ export const getUserPreferences = async () => {
 };
 
 /**
- * Update specific preference
+ * Update specific AI learning preference
  * @param {string} key - Preference key
  * @param {any} value - Preference value
  * @returns {Promise<boolean>} Success status
  */
-export const updatePreference = async (key, value) => {
+export const updateAILearningPreference = async (key, value) => {
   try {
-    const preferences = await getUserPreferences();
+    const preferences = await getAILearningPreferences();
     preferences[key] = value;
     preferences.lastUpdated = new Date().toISOString();
 
     return setUserData('preferences', preferences);
   } catch (error) {
-    console.error('Error updating preference:', error);
+    console.error('Error updating AI learning preference:', error);
     return false;
   }
+};
+
+/**
+ * Save AI learning preference (alias for updateAILearningPreference for backward compatibility)
+ * @param {string} key - Preference key
+ * @param {any} value - Preference value
+ * @returns {Promise<boolean>} Success status
+ */
+export const saveAILearningPreference = async (key, value) => {
+  return updateAILearningPreference(key, value);
 };

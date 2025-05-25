@@ -111,9 +111,9 @@ export const SUBSCRIPTION_PLANS = {
  * Get current user's subscription plan (legacy function for backward compatibility)
  * @returns {Object} Current subscription plan
  */
-export const getCurrentSubscriptionPlan = () => {
+export const getCurrentSubscriptionPlan = async () => {
   try {
-    const { getCurrentUser } = require('../api');
+    const { getCurrentUser } = await import('../api');
     const user = getCurrentUser();
     if (!user) return SUBSCRIPTION_PLANS.free;
 
@@ -131,9 +131,9 @@ export const getCurrentSubscriptionPlan = () => {
  */
 export const getRecommendedPlan = async () => {
   try {
-    const { getMemoryStatistics } = require('../api');
-    const { calculateMemoryUsage } = require('./subscriptionUtils');
-    
+    const { getMemoryStatistics } = await import('../api');
+    const { calculateMemoryUsage } = await import('./subscriptionUtils');
+
     const memoryStats = await getMemoryStatistics();
     const memoryUsage = calculateMemoryUsage(memoryStats);
     const conversations = memoryStats.totalConversations || 0;
@@ -164,9 +164,9 @@ export const getRecommendedPlan = async () => {
  * Get plan comparison data
  * @returns {Array} Array of plans with comparison data
  */
-export const getPlanComparison = () => {
-  const { formatLimit } = require('./subscriptionUtils');
-  
+export const getPlanComparison = async () => {
+  const { formatLimit } = await import('./subscriptionUtils');
+
   return Object.values(SUBSCRIPTION_PLANS).map(plan => ({
     ...plan,
     memoryLimitFormatted: `${plan.memoryLimit}MB`,

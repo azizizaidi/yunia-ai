@@ -26,8 +26,8 @@ export const calculateMemoryUsage = (memoryStats) => {
  */
 export const checkUsageLimits = async () => {
   try {
-    const { getMemoryStatistics } = require('../api');
-    const currentPlan = getCurrentSubscriptionPlan();
+    const { getMemoryStatistics } = await import('../api');
+    const currentPlan = await getCurrentSubscriptionPlan();
     const memoryStats = await getMemoryStatistics();
     const memoryUsage = calculateMemoryUsage(memoryStats);
 

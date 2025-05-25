@@ -10,9 +10,9 @@ import { getFromStorage, setToStorage } from '../storage';
  * @param {string} aiType - 'gemini' or 'rime'
  * @param {Object} memoryData - Memory data to save
  */
-export const saveAIMemory = (aiType, memoryData) => {
+export const saveAIMemory = async (aiType, memoryData) => {
   try {
-    const { getCurrentUser } = require('../auth/authCore');
+    const { getCurrentUser } = await import('../auth/authCore');
     const currentUser = getCurrentUser();
     if (!currentUser) return;
 
@@ -45,9 +45,9 @@ export const saveAIMemory = (aiType, memoryData) => {
  * @param {string} aiType - 'gemini' or 'rime'
  * @returns {Array} Array of memory objects
  */
-export const getAIMemory = (aiType) => {
+export const getAIMemory = async (aiType) => {
   try {
-    const { getCurrentUser } = require('../auth/authCore');
+    const { getCurrentUser } = await import('../auth/authCore');
     const currentUser = getCurrentUser();
     if (!currentUser) return [];
 
@@ -63,9 +63,9 @@ export const getAIMemory = (aiType) => {
  * Get shared memory between both AIs
  * @returns {Object} Shared memory object
  */
-export const getSharedMemory = () => {
+export const getSharedMemory = async () => {
   try {
-    const { getCurrentUser } = require('../auth/authCore');
+    const { getCurrentUser } = await import('../auth/authCore');
     const currentUser = getCurrentUser();
     if (!currentUser) return {};
 
@@ -81,14 +81,14 @@ export const getSharedMemory = () => {
  * Update shared memory between both AIs
  * @param {Object} memoryUpdate - Memory data to update
  */
-export const updateSharedMemory = (memoryUpdate) => {
+export const updateSharedMemory = async (memoryUpdate) => {
   try {
-    const { getCurrentUser } = require('../auth/authCore');
+    const { getCurrentUser } = await import('../auth/authCore');
     const currentUser = getCurrentUser();
     if (!currentUser) return;
 
     const sharedKey = `shared_memory_${currentUser.id}`;
-    const existingMemory = getSharedMemory();
+    const existingMemory = await getSharedMemory();
 
     const updatedMemory = {
       // Default Yunia AI settings
@@ -111,9 +111,9 @@ export const updateSharedMemory = (memoryUpdate) => {
  * Clear AI memory for specific type or all
  * @param {string} aiType - 'gemini', 'rime', or 'all'
  */
-export const clearAIMemory = (aiType = 'all') => {
+export const clearAIMemory = async (aiType = 'all') => {
   try {
-    const { getCurrentUser } = require('../auth/authCore');
+    const { getCurrentUser } = await import('../auth/authCore');
     const currentUser = getCurrentUser();
     if (!currentUser) return;
 
@@ -140,9 +140,9 @@ export const getAllMemoryData = async () => {
     if (!currentUser) return {};
 
     const [geminiMemory, rimeMemory, sharedMemory] = await Promise.all([
-      Promise.resolve(getAIMemory('gemini')),
-      Promise.resolve(getAIMemory('rime')),
-      Promise.resolve(getSharedMemory())
+      getAIMemory('gemini'),
+      getAIMemory('rime'),
+      getSharedMemory()
     ]);
 
     return {
