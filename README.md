@@ -310,7 +310,7 @@ yunia-ai/
 <div align="center">
   <img src="https://img.icons8.com/color/96/000000/rocket.png" width="60" />
   <br />
-<a href="https://yunia-205fl3bmf-azizizaidis-projects.vercel.app"> Click for demo</a>
+<a href="https://yunia-ai.vercel.app/"> Click for demo</a>
 </div>
 
 ---
