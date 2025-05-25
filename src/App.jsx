@@ -7,7 +7,8 @@ import {
   HabitTracker,
   DailyBriefings,
   ReminderPanel,
-  Subscription
+  Subscription,
+  Profile
 } from "./pages/dashboard";
 import {
   TaskManager,
@@ -19,7 +20,9 @@ import {
   DailySchedule,
   WakeupAssistant,
   Analytics,
-  ChatHistory
+  ChatHistory,
+  Settings,
+  Help
 } from "./pages/ComingSoonPages";
 import { PublicRoute, ProtectedRoute } from "./components/auth";
 // import { AIMemoryProvider } from "./context/AIMemoryContext";
@@ -114,6 +117,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute requiredRole="user">
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/tasks"
@@ -186,6 +197,22 @@ function App() {
           element={
             <ProtectedRoute requiredRole="user">
               <Analytics />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute requiredRole="user">
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/help"
+          element={
+            <ProtectedRoute requiredRole="user">
+              <Help />
             </ProtectedRoute>
           }
         />

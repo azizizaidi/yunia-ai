@@ -251,4 +251,54 @@ export const Analytics = () => (
   </DashboardLayout>
 );
 
+// Settings Page
+export const Settings = () => (
+  <DashboardLayout>
+    <div className="p-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold mb-2">Settings</h1>
+        <p className="text-base-content/70">
+          Configure advanced settings and system preferences
+        </p>
+      </div>
+      <ComingSoon
+        title="Advanced Settings Coming Soon"
+        description="Configure advanced system settings:"
+        icon="settings"
+        features={[
+          { text: "API integrations and connections" },
+          { text: "Data export and backup options" },
+          { text: "Advanced privacy controls" },
+          { text: "Developer settings and webhooks" }
+        ]}
+      />
+    </div>
+  </DashboardLayout>
+);
+
+// Help Page
+export const Help = () => (
+  <DashboardLayout>
+    <div className="p-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold mb-2">Help & Support</h1>
+        <p className="text-base-content/70">
+          Get help, documentation, and support for Yunia AI
+        </p>
+      </div>
+      <ComingSoon
+        title="Help Center Coming Soon"
+        description="Comprehensive help and support resources:"
+        icon="help"
+        features={[
+          { text: "Interactive tutorials and guides" },
+          { text: "FAQ and troubleshooting" },
+          { text: "Video tutorials and demos" },
+          { text: "Live chat support" }
+        ]}
+      />
+    </div>
+  </DashboardLayout>
+);
+
 

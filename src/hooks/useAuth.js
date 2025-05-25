@@ -20,9 +20,17 @@ const useAuth = () => {
       setUser(getCurrentUser());
     };
 
+    // Listen for profile updates
+    const handleProfileUpdate = (event) => {
+      setUser(event.detail.user);
+    };
+
     window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('userProfileUpdated', handleProfileUpdate);
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('userProfileUpdated', handleProfileUpdate);
     };
   }, []);
 
