@@ -1,5 +1,5 @@
 // Get API key from environment variables
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
 /**

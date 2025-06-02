@@ -1,4 +1,5 @@
-import { Navigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import useAuth from "../../hooks/useAuth";
 
 /**
@@ -9,19 +10,27 @@ import useAuth from "../../hooks/useAuth";
  */
 const PublicRoute = ({ children }) => {
   const { isLoading, isAuthenticated, isAdmin } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    // If authenticated, redirect to appropriate dashboard
+    if (!isLoading && isAuthenticated()) {
+      if (isAdmin()) {
+        router.push("/admin/dashboard");
+      } else {
+        router.push("/dashboard");
+      }
+    }
+  }, [isLoading, isAuthenticated, isAdmin, router]);
 
   // Show loading state if still checking authentication
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  // If authenticated, redirect to appropriate dashboard
+  // If authenticated, show loading while redirecting
   if (isAuthenticated()) {
-    if (isAdmin()) {
-      return <Navigate to="/admin/dashboard" replace />;
-    } else {
-      return <Navigate to="/dashboard" replace />;
-    }
+    return <div>Redirecting...</div>;
   }
 
   // If not authenticated, render the children

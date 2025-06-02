@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import {
   getCurrentUser,
   getUserProfile,
@@ -13,7 +13,7 @@ import {
  * @returns {Object} Profile state and handlers
  */
 const useProfile = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   
   // Main states
   const [user, setUser] = useState(null);
@@ -235,7 +235,7 @@ const useProfile = () => {
   const confirmDeleteAccount = () => {
     // In a real app, this would call an API to delete the account
     logoutUser();
-    navigate("/login", { replace: true });
+    router.push("/login");
   };
 
   // Clear messages

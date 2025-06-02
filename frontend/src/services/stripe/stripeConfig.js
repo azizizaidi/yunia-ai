@@ -7,7 +7,7 @@ import { loadStripe } from '@stripe/stripe-js';
 
 // Stripe Test Publishable Key (safe to expose in frontend)
 // Get from environment variable or use demo key
-const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51234567890abcdef';
+const STRIPE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_51234567890abcdef';
 
 // Initialize Stripe
 let stripePromise;

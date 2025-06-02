@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { logoutUser, getCurrentUser, getUserProfile } from "../../services/api";
 
 const menu = [
@@ -42,8 +43,8 @@ const menu = [
 ];
 
 export default function Sidebar({ onToggle, mobileMenuOpen, onMobileMenuClose, isMobile }) {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [activeItem, setActiveItem] = useState("/dashboard");
   const [user, setUser] = useState(null);
@@ -51,8 +52,8 @@ export default function Sidebar({ onToggle, mobileMenuOpen, onMobileMenuClose, i
   const [profileLoading, setProfileLoading] = useState(true);
 
   useEffect(() => {
-    setActiveItem(location.pathname);
-  }, [location]);
+    setActiveItem(pathname);
+  }, [pathname]);
 
   useEffect(() => {
     const currentUser = getCurrentUser();
@@ -95,8 +96,7 @@ export default function Sidebar({ onToggle, mobileMenuOpen, onMobileMenuClose, i
   const handleLogout = () => {
     logoutUser();
     const timestamp = new Date().getTime();
-    navigate(`/login?t=${timestamp}`, { replace: true });
-    window.history.pushState(null, "", `/login?t=${timestamp}`);
+    router.push(`/login?t=${timestamp}`);
   };
 
   const showLogoutModal = () => {
@@ -180,7 +180,7 @@ export default function Sidebar({ onToggle, mobileMenuOpen, onMobileMenuClose, i
                 {section.items.map((item) => (
                   <Link
                     key={item.label}
-                    to={item.to}
+                    href={item.to}
                     onClick={handleMobileMenuItemClick}
                     className={`
                       flex items-center w-full px-3 py-2 mb-1 rounded-lg transition-all duration-200

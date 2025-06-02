@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { getCurrentUser, logoutUser } from "../../services/api";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 
 /**
  * UserProfile component for displaying user information and logout button
@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
  */
 const UserProfile = () => {
   const [user, setUser] = useState(null);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   useEffect(() => {
     // Get current user from localStorage
@@ -24,10 +24,7 @@ const UserProfile = () => {
     const timestamp = new Date().getTime();
 
     // Redirect to login page
-    navigate(`/login?t=${timestamp}`, { replace: true });
-
-    // As an additional security measure, we can also set history state
-    window.history.pushState(null, "", `/login?t=${timestamp}`);
+    router.push(`/login?t=${timestamp}`);
   };
 
   const showLogoutModal = () => {
