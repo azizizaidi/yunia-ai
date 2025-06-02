@@ -1,322 +1,243 @@
-# Yunia AI – Personal Assistant Dashboard
+# Yunia AI - Personal Assistant Monorepo
 
-<div align="center">
+Yunia AI is a comprehensive personal assistant application designed to help users manage their daily tasks, habits, and productivity. This monorepo contains both the Next.js frontend and Laravel backend, providing a complete full-stack solution.
 
-   <p align="center">
-  <img src="yunia-ai.png" alt="Yunia AI Logo" width="800" />
-</p>
-  <h3>✨ "Hi, I'm Yunia — your personal AI assistant." ✨</h3>
+## 🏗️ Architecture
 
-  <div align="center">
-    <img alt="React" src="https://img.shields.io/badge/React-18.3-blue?style=for-the-badge&logo=react&logoColor=white" />
-    <img alt="Vite" src="https://img.shields.io/badge/Vite-6.3-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
-    <img alt="Tailwind" src="https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" />
-    <img alt="DaisyUI" src="https://img.shields.io/badge/DaisyUI-5.0-5A67D8?style=for-the-badge&logo=daisyui&logoColor=white" />
-  </div>
+This project follows a **monorepo structure** with separate frontend and backend applications:
 
-  <br />
-
-  <a href="#-overview">Overview</a> •
-  <a href="#-features">Features</a> •
-  <a href="#-tech-stack">Tech Stack</a> •
-  <a href="#-setup">Setup</a> •
-  <a href="#-documentation">Documentation</a>
-</div>
-
-<br />
-
----
-
-## 🎯 Project Overview
-
-**Domain: Personal AI Assistant SaaS Platform**
-
-I built Yunia AI as my frontend bootcamp project - it's basically a personal assistant dashboard where users can chat with AI, track their habits, manage subscriptions, and organize their daily stuff. Think of it like having your own digital assistant that remembers your conversations and helps you stay productive.
-
-The whole idea came from wanting to create something that feels like a real SaaS product you'd actually pay for, not just another todo app. So I added proper user authentication, subscription plans with Stripe, and even admin features.
-
-**What makes this different:**
-- Actually works with real AI (Google Gemini API)
-- Has voice chat - you can literally talk to it
-- Remembers your conversations and learns from them
-- Proper subscription system with usage limits
-- Clean, responsive design that doesn't look like a student project
-- Role-based access (regular users vs admins)
-
-This was built for the **Adnexio Full-Stack Bootcamp** as my frontend capstone project. I wanted to show I could build something commercial-grade, not just follow tutorials.
-
----
-
-## ✨ What I Built
-
-### Core Features That Actually Work
-
-**🤖 AI Chat Interface**
-- Real conversations with Google Gemini AI
-- Voice input/output using Web Speech API
-- Conversation history that persists
-- Smart memory management with duplicate detection
-
-**👤 User Authentication & Roles**
-- Separate login for users and admins
-- Protected routes based on user roles
-- Profile management with avatar uploads
-- Secure logout with confirmation
-
-**💳 Subscription System**
-- Three tiers: Free, Pro, Business
-- Real Stripe integration (test mode)
-- Usage monitoring and limits
-- Subscription cancellation handling
-
-**📊 Memory & Analytics**
-- Conversation categorization and filtering
-- Polar charts showing AI learning data
-- Smart duplicate conversation cleanup
-- Data retention management
-
-**🎯 Productivity Tools**
-- Habit tracking system
-- Reminder management
-- Daily briefings
-- Task organization
-
-**📱 User Experience**
-- Fully responsive design (mobile + desktop)
-- Collapsible sidebar with tooltips
-- DaisyUI components for consistency
-- Loading states and error handling
-
----
-
-## 🛠 Tech Stack
-
-**Frontend Framework**
-- React 18.3 with functional components and hooks
-- Vite 6.3 for fast development and building
-- React Router DOM for navigation
-
-**Styling & UI**
-- Tailwind CSS 3.4 for utility-first styling
-- DaisyUI 5.0 for pre-built components
-- Responsive design for mobile and desktop
-
-**APIs & Integrations**
-- Google Gemini AI for chat functionality
-- Stripe for payment processing
-- Web Speech API for voice input/output
-- Fetch API for data handling
-
-**State Management**
-- React hooks (useState, useEffect, useContext)
-- Local storage for data persistence
-- Custom hooks for reusable logic
-
-**Development Tools**
-- ESLint for code quality
-- PostCSS for CSS processing
-- Chart.js for data visualization
-
-**Data Storage**
-- JSON files for mock API data
-- Local storage for user preferences
-- Session storage for temporary data
-
----
-
-## � Getting Started
-
-### Prerequisites
-- Node.js 18+ installed
-- Git for cloning the repository
-- A modern web browser
-
-### Installation
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/azizizaidi/yunia-ai.git
-cd yunia-ai
-```
-
-2. **Install dependencies**
-```bash
-npm install
-```
-
-3. **Set up environment variables** (optional)
-```bash
-# Create .env file for API keys (if you want real AI functionality)
-VITE_GEMINI_API_KEY=your_gemini_api_key_here
-VITE_STRIPE_PUBLISHABLE_KEY=your_stripe_key_here
-```
-
-4. **Start the development server**
-```bash
-npm run dev
-```
-
-5. **Open your browser**
-Navigate to `http://localhost:5173`
-
-### Test Accounts
-- **User**: email: `ina@gmail.com`, password: `ina123`
-- **Admin**: email: `azizizaidi5@gmail.com`, password: `admin123`
-
-### Building for Production
-```bash
-npm run build
-npm run preview
-```
-
----
+- **Frontend**: Next.js 15 with TypeScript, Tailwind CSS, and DaisyUI
+- **Backend**: Laravel 12 with PHP, providing REST API endpoints
+- **Database**: SQLite (development) / PostgreSQL (production)
+- **Deployment**: Separate deployment for frontend and backend
 
 ## 📁 Project Structure
 
-<div align="center">
-  <img src="https://img.icons8.com/color/96/000000/folder-tree.png" width="80" />
-</div>
-
 ```
 yunia-ai/
-├── docs/ # 📚 Documentation files
-│   ├── flowchart.drawio # System flow diagram
-│   ├── wireframe.png # UI layout plan
-│   ├── module-list.md # Feature list & scope
-│   ├── pseudocode.md # Logic plan before coding
-│   ├── api-plan.md # API endpoint reference
-│   └── dev-notes.md # Daily notes & progress
-│
-├── public/ # 🔓 HTML & static assets
-│   └── index.html
-│
-├── src/ # 💻 React frontend
-│   ├── assets/ # Icons, images, audio
-│   ├── components/ # UI modules (ChatBox, HabitList, etc.)
-│   ├── pages/ # Route-based views (Dashboard, Plan)
-│   ├── layout/ # Sidebar, Header, layout shell
-│   ├── services/ # API logic (weather, traffic, calendar)
-│   ├── hooks/ # Custom hooks (useAuth, useTTS, etc.)
-│   ├── context/ # Global context (AuthContext, AssistantContext)
-│   ├── utils/ # Prompt builders, helpers
-│   ├── styles/ # Tailwind & global styles
-│   ├── App.jsx # App root
-│   └── main.jsx # Entry point
-│
-├── .env # 🔒 Environment variables (API keys, not in Git)
-├── .env.example # 📝 Example environment variables template
-├── db.json # 🔧 Mock data for development
-├── vercel.json # ⚙️ Deployment configuration
-├── README.md # 📘 This file
-├── .gitignore # Git ignore rules
-├── package.json # Project metadata & dependencies
-├── vite.config.js # Vite bundler config
-└── tailwind.config.js # Tailwind setup
+├── frontend/                 # Next.js Frontend Application
+│   ├── src/
+│   │   ├── app/             # Next.js App Router
+│   │   ├── components/      # React components
+│   │   ├── context/         # React context providers
+│   │   ├── hooks/           # Custom React hooks
+│   │   ├── services/        # API services
+│   │   └── utils/           # Utility functions
+│   ├── public/              # Static assets
+│   └── package.json         # Frontend dependencies
+├── backend/                 # Laravel Backend Application
+│   ├── app/                 # Laravel application code
+│   ├── database/            # Migrations and seeders
+│   ├── routes/              # API routes
+│   └── composer.json        # Backend dependencies
+├── docs/                    # Documentation
+├── package.json             # Root workspace configuration
+└── README.md               # This file
 ```
 
+## 🌟 Features
+
+### Core Features
+- **AI Chat Interface**: Intelligent conversation with memory retention
+- **Voice Input**: RimeAI integration for voice-to-text functionality
+- **Habit Tracker**: Track and monitor daily habits with visual progress
+- **Memory Manager**: Store and organize personal information and preferences
+- **Daily Briefings**: Personalized daily summaries and insights
+- **Reminder Panel**: Smart reminder system with notifications
+- **Google Calendar Integration**: Seamless calendar management
+- **Live Data Dashboard**: Real-time data visualization
+
+### Authentication & User Management
+- **Dual Authentication System**: Separate login for users and admins
+- **Role-based Access Control**: Different dashboards for different user types
+- **Secure Registration**: User registration without Terms of Service requirement
+- **JWT Authentication**: Secure API authentication with Laravel Sanctum
+
+### Subscription & Payments
+- **Tiered Subscription Plans**: Multiple subscription levels without unlimited tiers
+- **Stripe Integration**: Secure payment processing with test environment
+- **Subscription Management**: Cancel subscriptions with deferred termination
+- **Data Retention Options**: Extended data retention beyond standard limits
+
+## 🛠️ Technology Stack
+
+### Frontend (Next.js)
+- **Next.js 15**: React framework with App Router
+- **TypeScript**: Type-safe development
+- **Tailwind CSS**: Utility-first CSS framework
+- **DaisyUI**: Component library for Tailwind CSS
+- **Chart.js**: Data visualization with react-chartjs-2
+- **Stripe**: Payment processing integration
+
+### Backend (Laravel)
+- **Laravel 12**: PHP framework for web applications
+- **Laravel Sanctum**: API authentication
+- **Eloquent ORM**: Database abstraction layer
+- **SQLite/PostgreSQL**: Database options
+- **Laravel Pail**: Real-time log monitoring
+
+### Development Tools
+- **ESLint**: Code linting and formatting
+- **Concurrently**: Run multiple commands simultaneously
+- **Composer**: PHP dependency management
+- **NPM Workspaces**: Monorepo package management
+
+## 🚀 Getting Started
+
+### Prerequisites
+- **Node.js** (v18 or higher)
+- **PHP** (v8.2 or higher)
+- **Composer** (latest version)
+- **npm** (v8 or higher)
+
+### Quick Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/azizizaidi/yunia-ai.git
+   cd yunia-ai
+   ```
+
+2. **Install all dependencies**
+   ```bash
+   npm run install:all
+   ```
+
+3. **Setup backend environment**
+   ```bash
+   npm run setup:backend
+   ```
+
+4. **Start both frontend and backend**
+   ```bash
+   npm run dev
+   ```
+
+5. **Access the applications**
+   - Frontend: `http://localhost:3000`
+   - Backend API: `http://localhost:8000`
+
+### Manual Setup
+
+#### Frontend Setup
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+#### Backend Setup
+```bash
+cd backend
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+php artisan serve
+```
+
+## 📜 Available Scripts
+
+### Root Level Scripts
+- `npm run dev` - Start both frontend and backend
+- `npm run dev:frontend` - Start only frontend
+- `npm run dev:backend` - Start only backend
+- `npm run build` - Build frontend for production
+- `npm run install:all` - Install all dependencies
+- `npm run setup` - Complete setup including backend
+- `npm run clean` - Remove all node_modules and vendor folders
+
+### Frontend Scripts
+```bash
+cd frontend
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+```
+
+### Backend Scripts
+```bash
+cd backend
+php artisan serve    # Start development server
+php artisan migrate  # Run database migrations
+php artisan test     # Run tests
+composer install     # Install dependencies
+```
+
+## 🔧 Configuration
+
+### Environment Variables
+
+#### Frontend (.env.local)
+```env
+# Gemini AI Configuration
+NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key_here
+
+# Stripe Configuration
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key_here
+
+# Backend API URL
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
+```
+
+#### Backend (.env)
+```env
+# Database Configuration
+DB_CONNECTION=sqlite
+DB_DATABASE=/absolute/path/to/database.sqlite
+
+# API Configuration
+APP_URL=http://localhost:8000
+FRONTEND_URL=http://localhost:3000
+
+# Stripe Configuration
+STRIPE_KEY=your_stripe_secret_key_here
+STRIPE_SECRET=your_stripe_secret_key_here
+```
+
+## 🚀 Deployment
+
+### Frontend Deployment (Vercel)
+```bash
+cd frontend
+npm run build
+# Deploy to Vercel or your preferred platform
+```
+
+### Backend Deployment (Laravel)
+```bash
+cd backend
+composer install --optimize-autoloader --no-dev
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+## 📝 API Documentation
+
+The Laravel backend provides RESTful API endpoints for:
+- User authentication and management
+- AI chat conversations
+- Habit tracking
+- Memory management
+- Subscription handling
+- Payment processing
+
+API documentation will be available at `http://localhost:8000/api/documentation` when the backend is running.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
 ---
 
-## 📄 Documentation
-
-<div align="center">
-  <img src="https://img.icons8.com/color/96/000000/document.png" width="60" />
-  <br />
-  <strong>All documentation is stored in the `/docs` folder:</strong>
-</div>
-
-<div align="center">
-  <table>
-    <tr>
-      <td align="center">
-        <img src="https://img.icons8.com/color/48/000000/workflow.png" />
-        <br /><strong>flowchart.drawio</strong>
-        <br />System flow
-      </td>
-      <td align="center">
-        <img src="https://img.icons8.com/color/48/web-design.png" />
-        <br /><strong>wireframe.png</strong>
-        <br />Screen layout plan
-      </td>
-      <td align="center">
-        <img src="https://img.icons8.com/color/48/000000/module.png" />
-        <br /><strong>module-list.md</strong>
-        <br />Frontend modules to build
-      </td>
-    </tr>
-    <tr>
-      <td align="center">
-        <img src="https://img.icons8.com/color/48/000000/source-code.png" />
-        <br /><strong>pseudocode.md</strong>
-        <br />Feature logic design
-      </td>
-      <td align="center">
-        <img src="https://img.icons8.com/color/48/000000/api.png" />
-        <br /><strong>api-plan.md</strong>
-        <br />Mock + real API endpoints
-      </td>
-      <td align="center">
-        <img src="https://img.icons8.com/color/48/000000/api-settings.png" />
-        <br /><strong>api-setup.md</strong>
-        <br />API keys setup guide
-      </td>
-    </tr>
-    <tr>
-      <td align="center">
-        <img src="https://img.icons8.com/color/48/000000/notepad.png" />
-        <br /><strong>dev-notes.md</strong>
-        <br />Developer progress log
-      </td>
-      <td align="center"></td>
-      <td align="center"></td>
-    </tr>
-  </table>
-</div>
-
----
-
-## 📅 Development Timeline
-
-<div align="center">
-  <img src="https://img.icons8.com/color/96/000000/timeline.png" width="80" />
-</div>
-
-| Day | Focus | Progress |
-|-----|-------|----------|
-| **1–2** | Planning: flowchart, wireframe, pseudocode | 📋 |
-| **3–6** | Auth, Layout, Chat, Voice | 🔐 |
-| **7–10** | Habit, Reminder, Weather, Memory | 📝 |
-| **11–12** | Traffic, Google Calendar, Plan | 🚗 |
-| **13** | Autopilot AI Briefing | 🤖 |
-| **14** | UI Polish, Deployment, Final Docs | 🚀 |
-
----
-
-## 📢 Acknowledgement
-
-<div align="center">
-  <img src="https://img.icons8.com/color/96/000000/graduation-cap.png" width="60" />
-  <br />
-  <strong>This project is built as part of the</strong>
-  <br />
-  <strong>Adnexio Full-Stack Bootcamp (Frontend Phase – May 2025)</strong>
-  <br />
-  <em>by Muhammad Azizi bin Zaidi</em>
-</div>
-
----
-
-## 🌐 Live Demo
-
-<div align="center">
-  <img src="https://img.icons8.com/color/96/000000/rocket.png" width="60" />
-  <br />
-<a href="https://yunia-ai.vercel.app/"> Click for demo</a>
-</div>
-
----
-
-<div align="center">
-  <sub>Made with ❤️ by Muhammad Azizi bin Zaidi</sub>
-  <br />
-  <sub>© 2025 Yunia AI. All rights reserved.</sub>
-</div>
+**Yunia AI** - Your intelligent personal assistant for enhanced productivity and organization.
