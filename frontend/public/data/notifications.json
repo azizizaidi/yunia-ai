@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "type": "task",
+    "msg": "You have a new task assigned.",
+    "time": "5 minutes ago",
+    "read": false
+  },
+  {
+    "id": 2,
+    "type": "calendar",
+    "msg": "Coaching session at 3PM today.",
+    "time": "1 hour ago",
+    "read": false
+  },
+  {
+    "id": 3,
+    "type": "payment",
+    "msg": "Subscription payment successful.",
+    "time": "2 days ago",
+    "read": true
+  },
+  {
+    "id": 4,
+    "type": "alert",
+    "msg": "System maintenance scheduled for tonight.",
+    "time": "3 hours ago",
+    "read": false
+  },
+  {
+    "id": 5,
+    "type": "message",
+    "msg": "New message from Yunia AI.",
+    "time": "1 day ago",
+    "read": true
+  }
+]
